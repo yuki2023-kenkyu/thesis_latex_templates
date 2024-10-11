@@ -1,0 +1,96 @@
+\documentclass[final]{beamer}
+
+% ====================
+% Packages
+% ====================
+
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[orientation=portrait,size=a0,scale=1.0]{beamerposter}
+\usetheme{gemini}
+\usecolortheme{nott}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.14}
+\usepackage{anyfontsize}
+\usepackage{amsmath,amssymb}%%%数式オプションの拡張
+\usepackage{physics}
+\usepackage{times}%%%Timesフォントの使用
+\usepackage[%
+style=phys,%
+articletitle=false,biblabel=brackets,%
+chaptertitle=false,pageranges=false%
+]{biblatex}
+\addbibresource{poster.bib}
+
+% ====================
+% Lengths
+% ====================
+
+% If you have N columns, choose \sepwidth and \colwidth such that
+% (N+1)*\sepwidth + N*\colwidth = \paperwidth
+\newlength{\sepwidth}
+\newlength{\colwidth}
+\setlength{\sepwidth}{0.025\paperwidth}
+\setlength{\colwidth}{0.44\paperwidth}
+
+\newcommand{\separatorcolumn}{\begin{column}{\sepwidth}\end{column}}
+\newcommand{\figimage}[4]{\begin{figure}[phtb]\centering\includegraphics[keepaspectratio, scale=#4]{#1}\caption{#2}\label{#3}\end{figure}}
+%background graphics
+%\usebackgroundtemplate{\includegraphics[width=\paperwidth]{back_figure_ver2.png}}
+
+% ====================
+% Title
+% ====================
+
+\title{Stability analysis of a non-singular bounce universe model with positive curvature in f(R) gravity}
+\author{Yuki Hashimoto \and Kazuharu Bamba}
+\institute[shortinst]{Fukushima University}
+
+% ====================
+% Footer (optional)
+% ====================
+
+\footercontent{
+  %\href{https://www.example.com}{https://www.example.com} 
+  \hfill
+  COSMO'24 \ Kyoto, \ Japan \ October 21-25, \ 2024 \hfill
+  \href{E-mail:hashi.kenkyu2021@gmail.com}{hashi.kenkyu2021@gmail.com}
+% (can be left out to remove footer)
+}
+
+% ====================
+% Logo (optional)
+% ====================
+
+% use this to include logos on the left and/or right side of the header:
+%\logoright{\includegraphics[height=7cm]{logos/NCG-LOGO-INV.pdf}}
+\logoleft{\includegraphics[height=7cm]{logos/img-40-removebg-preview.png}}
+% ====================
+% Body
+% ====================
+%\renewcommand{\baselinestretch}{1.5}
+
+\begin{document}
+        \begin{frame}[t]
+                \begin{columns}[t]
+                        \separatorcolumn
+                        \begin{column}{\colwidth}
+                                \input{document_files/introduction.tex}
+                                \input{document_files/model.tex}
+                        \end{column}
+                        \separatorcolumn
+                        \begin{column}{\colwidth}
+                                \input{document_files/result.tex}
+                                \input{document_files/conclusion.tex}
+                                \begin{block}{References}
+                                        \nocite{*}
+                                        \footnotesize{\printbibliography}
+                                \end{block}
+                        \end{column}
+                        \separatorcolumn
+                \end{columns}
+        \end{frame}
+\end{document}

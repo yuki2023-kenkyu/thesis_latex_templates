@@ -1,0 +1,31 @@
+% poster.sty
+
+\ProvidesPackage{poster}
+
+\RequirePackage{beamer}
+\RequirePackage{beamerposter}
+
+% ポスターサイズの設定（A0サイズ）
+\geometry{paperwidth=841mm,paperheight=1189mm}
+
+% テーマとカラーテーマの設定（必要に応じて変更）
+\usetheme{default}
+\usecolortheme{seahorse}
+
+% フォントの設定（必要に応じて変更）
+\usepackage{fontspec}
+\setmainfont{Times New Roman}
+
+% マージンの設定
+\setbeamersize{text margin left=10mm, text margin right=10mm}
+
+% その他のパッケージ
+\usepackage{graphicx}
+\usepackage{multicol}
+\usepackage{amsmath, amssymb}
+
+% タイトルや著者情報の設定
+\title{ポスターのタイトル}
+\author{著者名}
+\institute{所属機関}
+\date{\today}
