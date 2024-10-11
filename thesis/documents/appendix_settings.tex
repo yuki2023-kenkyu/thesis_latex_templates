@@ -1,0 +1,45 @@
+
+% 付録は chapter の 1 つとして作りますが、章番号は表示しません。
+% また付録の 1 つずつはアルファベットで番号付けをするのが一般的です。
+\setcounter{section}{0}% section の番号をゼロにリセットする
+\renewcommand{\thesection}{\Alph{section}} % 数字ではなくアルファベットで数える
+\setcounter{equation}{0}% 式番号を A.1 のようにする
+\renewcommand{\theequation}{\Alph{section}.\arabic{equation}}
+\setcounter{figure}{0}% 図番号
+\renewcommand{\thefigure}{\Alph{section}.\arabic{figure}}
+\setcounter{table}{0}% 表番号
+\renewcommand{\thetable}{\Alph{section}.\arabic{table}}
+\lstset{
+  language = Python,
+  %背景色と透過度
+  backgroundcolor={\color[gray]{.90}},
+  %枠外に行った時の自動改行
+  breaklines = true,
+  %自動改行後のインデント量(デフォルトでは20[pt])
+  breakindent = 10pt,
+  %標準の書体
+  basicstyle = \ttfamily\scriptsize,
+  %コメントの書体
+  commentstyle = {\itshape \color[cmyk]{1,0.4,1,0}},
+  %関数名等の色の設定
+  classoffset = 0,
+  %キーワード(int, ifなど)の書体
+  keywordstyle = {\bfseries \color[cmyk]{0,1,0,0}},
+  %表示する文字の書体
+  stringstyle = {\ttfamily \color[rgb]{0,0,1}},
+  %枠 "t"は上に線を記載, "T"は上に二重線を記載
+  %他オプション：leftline，topline，bottomline，lines，single，shadowbox
+  frame = TBrl,
+  %frameまでの間隔(行番号とプログラムの間)
+  framesep = 5pt,
+  %行番号の位置
+  numbers = left,
+  %行番号の間隔
+  stepnumber = 1,
+  %行番号の書体
+  numberstyle = \tiny,
+  %タブの大きさ
+  tabsize = 4,
+  %キャプションの場所("tb"ならば上下両方に記載)
+  captionpos = t
+}

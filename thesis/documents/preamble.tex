@@ -1,0 +1,69 @@
+\usepackage{jtygm}%%%%%%%%%%%%%%%%%Font Warning対策%%%%%
+\usepackage[dvipdfmx]{graphicx}
+\usepackage{bmpsize}
+\usepackage{here}
+\usepackage{comment}
+\usepackage{amsmath, amssymb, amsthm, physics}
+\usepackage{mathtools}% あからさまに読み込む
+\usepackage{booktabs}
+\usepackage[dvipdfmx,colorlinks=false]{hyperref}
+\usepackage{pxjahyper}
+\usepackage{titlesec}
+\usepackage{wrapfig}
+\usepackage{enumerate}
+\usepackage{caption}
+\usepackage{breqn}%数式dmath環境の使用
+\usepackage{listings, jlisting, color}% ソースコード関連
+\usepackage{cleveref}
+\usepackage[%
+	backend=biber,
+	style=numeric,
+	sorting=none
+]{biblatex}
+\ExecuteBibliographyOptions{
+  	sortcites=true,%\cite{}の中に書いた順番通りの出力する(falseなら並び替えない)
+  	date=year,%dateの表示はyearのみにする
+  	urldate=iso,%urldateの表示はyyyy-mm-ddにする
+  	maxnames=8,%著者がmaxnamesを超えるときminnamesの数まで省略する
+  	minnames=3,
+  	%maxbibnames=99,%参考文献では99人まで著者を載せる
+  	%backref=true,%引用したページを文献リストに表示する
+  	%backrefstyle=none,%ページが連続するときの省略(デフォルトでthree)。省略させたくないときはnoneにする
+	abbreviate=true,
+  	isbn=false,%isbnを出力しない
+  	url=false,
+  	doi=true,
+	arxiv=abs,
+  	eprint=true,
+	backref=true
+}
+\addbibresource{ref.bib}
+\crefformat{chapter}{第#2#1#3章}
+\crefformat{section}{#2#1#3節}
+\crefformat{subsection}{#2#1#3節}
+\crefformat{enumi}{#2（#1）#3}
+\crefrangeformat{enumi}{#3（#1）#4--#5（#2）#6}
+\crefmultiformat{enumi}{#2（#1）#3}{，#2（#1）#3}{，#2（#1）#3}{，#2（#1）#3}
+
+\numberwithin{equation}{section}
+\crefname{equation}{式}{式}% {環境名}{単数形}{複数形} \crefで引くときの表示
+\crefname{dmath}{式}{式}% {環境名}{単数形}{複数形} \crefで引くときの表示
+\crefname{figure}{Fig.}{Fig.}% {環境名}{単数形}{複数形} \crefで引くときの表示
+\crefname{table}{Tab.}{Tab.}% {環境名}{単数形}{複数形} \crefで引くときの表示
+
+\newcommand{\crefpairconjunction}{と}
+\newcommand{\crefrangeconjunction}{から}
+\newcommand{\crefmiddleconjunction}{，}
+\newcommand{\creflastconjunction}{，および}
+
+% 図のキャプションのカスタマイズ
+% https://karat5i.blogspot.com/2014/10/latex.html
+\captionsetup[figure]{format=plain, labelformat=simple, labelsep=space, font=footnotesize}
+% 「図」の表示名を変更
+\renewcommand{\figurename}{Fig.}
+\renewcommand{\tablename}{Table.}
+% 図，表番号を"<章番号>.<図番号>” ，"<章番号>.<表番号>” へ
+\renewcommand{\thefigure}{\thechapter.\arabic{figure}}
+\renewcommand{\thetable}{\thechapter.\arabic{table}}
+%数式フラグ：「eq:」
+%図フラグ：「fig:」
