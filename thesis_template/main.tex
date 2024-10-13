@@ -2,6 +2,7 @@
 \documentclass[12pt]{lab_thesis}
 % プリアンブル
 \input{./preambles/packages.tex}
+% 自作した数式のマクロ
 \input{./preambles/numerical_formulas.tex}
 
 % 論文情報の設定
@@ -13,13 +14,13 @@
 \Date{6}
 
 % 論文種別の設定
+% 卒業論文の場合がデフォルト
 %\master %修士論文の場合はこのコメントを外す
 %\doctor %博士論文の場合はこのコメントを外す
 
 \begin{document}
     % 表紙の作成
     \Maketitle
-
     % ページ番号をローマ数字に変更
     \pagenumbering{roman}
     % 目次の挿入
@@ -27,24 +28,21 @@
     \clearpage
     % ページ番号をアラビア数字に戻す
     \pagenumbering{arabic}
-
     % 本文の開始
     \input{./documents/introduction.tex}
     \input{./documents/main_text_1.tex}
     \input{./documents/main_text_2.tex}
-    \input{./documents/result.tex}
+    \input{./documents/main_text_3.tex}
+    \input{./documents/main_text_4.tex}
+    \input{./documents/main_text_5.tex}
     \input{./documents/conclusion.tex}
-
     % 謝辞
     \thanks
-    ここに謝辞をしたためます．
+    本論文を執筆するにあたり，感謝すべき人物，環境などがありましたら記述してください．
     \endthanks
-
     % 付録の開始
     \appendix
     \input{./documents/appendix.tex}
-
     % 参考文献の出力
     \printbibliography[title=参考文献]
-
 \end{document}
