@@ -1,0 +1,51 @@
+% main.tex
+\documentclass[12pt]{lab_thesis}
+% プリアンブル
+\input{./preambles/packages.tex}
+\input{./preambles/numerical_formulas.tex}
+
+% 論文情報の設定
+\Title{サンプル論文タイトル}
+\Author{山田　太郎}
+\Professor{馬塲　一晴}
+\StudentNumber{123456789}
+% 卒業もしくは修了年度の設定
+\Date{6}
+
+% 論文種別の設定
+%\master %修士論文の場合はこのコメントを外す
+%\doctor %博士論文の場合はこのコメントを外す
+
+\begin{document}
+
+    % 表紙の作成
+    \Maketitle
+
+    % ページ番号をローマ数字に変更
+    \pagenumbering{roman}
+    % 目次の挿入
+    \tableofcontents
+    \clearpage
+    % ページ番号をアラビア数字に戻す
+    \pagenumbering{arabic}
+
+    % 本文の開始
+    \input{./documents/introduction.tex}
+    \input{./documents/main_text_1.tex}
+    \input{./documents/main_text_2.tex}
+    \input{./documents/result.tex}
+    \input{./documents/conclusion.tex}
+
+    % 謝辞
+    \thanks
+    ここに謝辞をしたためます．
+    \endthanks
+
+    % 付録の開始
+    \appendix
+    \input{./documents/appendix.tex}
+
+    % 参考文献の出力
+    \printbibliography[title=参考文献]
+
+\end{document}

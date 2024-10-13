@@ -1,0 +1,8 @@
+% Christoffel記号
+\newcommand{\chr}[3]{\Gamma^{#1}_{#2 #3}}
+% クロネッカーのデルタ
+\newcommand{\chron}[2]{\delta^{#1}_{#2}}
+%Riemannテンソル
+\newcommand{\Riemanntensor}[5]{
+  \partial_{#3}\Gamma^{#1}_{#2 #4} - \partial_{#4}\Gamma^{#1}_{#2 #3} + \Gamma^{#1}_{#3 #5}\Gamma^{#5}_{#2 #4} - \Gamma^{#1}_{#4 #5}\Gamma^{#5}_{#2 #3}
+}
