@@ -77,8 +77,8 @@
 \pagestyle{plain}    % ページ番号のみを表示するスタイル
 \setlength{\parindent}{1zw} % 段落の字下げを全角1文字分
 
-% 脚注番号を記号に変更
-\renewcommand{\thefootnote}{\arabic{footnote}} % 脚注番号をアラビア数字に
+% 脚注番号をアラビア数字に変更
+\renewcommand{\thefootnote}{\arabic{footnote}}
 \renewcommand{\footnoterule}{%
   \kern -3pt
   \hrule width \textwidth height 0.5pt
@@ -189,7 +189,7 @@
   \secdef\@lab@chapter\@lab@schapter % 番号付き・なしの章の処理
 }
 
-% 章のタイトル出力を再定義
+% 章のタイトル出力を再定義（番号付き）
 \def\@lab@chapter[#1]#2{%
   \ifnum \c@secnumdepth >\m@ne
     \refstepcounter{chapter}%
@@ -206,13 +206,16 @@
   \pagestyle{plain} % ページスタイルをplainに設定
 }
 
+% 章のタイトル出力を再定義（番号なし）
 \def\@lab@schapter#1{%
+  \chaptermark{#1}% 追加：ヘッダーの設定
+  \addcontentsline{toc}{chapter}{#1}% 追加：目次に追加
   \@makeschapterhead{#1}%
   \@afterheading%
   \pagestyle{plain} % ページスタイルをplainに設定
 }
 
-% 章タイトルのスタイルを再定義
+% 章タイトルのスタイルを再定義（番号付き）
 \def\@makechapterhead#1{%
   \vspace*{20pt}%
   {\parindent \z@ \raggedright
@@ -222,7 +225,16 @@
       \hskip 15pt % 章番号とタイトルの間にスペースを追加
     \fi
     \chaptitlefont{#1}\par
-    \nobreak \vskip 15pt
+    \nobreak \vskip 15pt % タイトル下のスペース
+  }}
+
+% 章タイトルのスタイルを再定義（番号なし）
+\def\@makeschapterhead#1{%
+  \vspace*{20pt}%
+  {\parindent \z@ \raggedright
+    \interlinepenalty\@M
+    \chaptitlefont{#1}\par
+    \nobreak \vskip 15pt % タイトル下のスペース（番号付きと同じに設定）
   }}
 
 % 章番号とタイトルのフォント設定
