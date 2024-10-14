@@ -208,8 +208,7 @@
 
 % 章のタイトル出力を再定義（番号なし）
 \def\@lab@schapter#1{%
-  \chaptermark{#1}% 追加：ヘッダーの設定
-  \addcontentsline{toc}{chapter}{#1}% 追加：目次に追加
+  \chaptermark{#1}% ヘッダーの設定
   \@makeschapterhead{#1}%
   \@afterheading%
   \pagestyle{plain} % ページスタイルをplainに設定
@@ -291,5 +290,24 @@
 % ページ番号のスタイルを再定義
 \pagenumbering{arabic}
 \setcounter{tocdepth}{2}
+
+% 参考文献を目次に表示しないようにするための再定義
+\renewcommand{\thebibliography}[1]{%
+  \chapter*{\bibname}% 章タイトル（番号なし）
+  \@afterheading%
+  \list{\@biblabel{\@arabic\c@enumiv}}{%
+    \setlength{\labelwidth}{\z@}%
+    \setlength{\leftmargin}{\parindent}%
+    \setlength{\itemindent}{-\parindent}%
+    \setlength{\itemsep}{0pt}%
+    \setlength{\parsep}{\z@}%
+    \usecounter{enumiv}%
+    \let\p@enumiv\@empty%
+    \renewcommand{\theenumiv}{\@arabic\c@enumiv}%
+  }%
+  \renewcommand{\newblock}{\par}%
+  \sloppy
+  \sfcode`\.=1000\relax
+}
 
 \endinput
