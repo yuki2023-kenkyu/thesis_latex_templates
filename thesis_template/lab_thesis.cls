@@ -78,7 +78,12 @@
 \setlength{\parindent}{1zw} % 段落の字下げを全角1文字分
 
 % 脚注番号を記号に変更
-\renewcommand{\thefootnote}{\fnsymbol{footnote}}
+\renewcommand{\thefootnote}{\arabic{footnote}} % 脚注番号をアラビア数字に
+\renewcommand{\footnoterule}{%
+  \kern -3pt
+  \hrule width \textwidth height 0.5pt
+  \kern 2.6pt
+}
 
 % タイトル情報を保存するためのマクロ定義
 \def\Title#1{\gdef\Titlebox{#1}}        % タイトル
@@ -198,11 +203,13 @@
   \addtocontents{lot}{\protect\addvspace{10pt}}%
   \@makechapterhead{#2}%
   \@afterheading%
+  \pagestyle{plain} % ページスタイルをplainに設定
 }
 
 \def\@lab@schapter#1{%
   \@makeschapterhead{#1}%
   \@afterheading%
+  \pagestyle{plain} % ページスタイルをplainに設定
 }
 
 % 章タイトルのスタイルを再定義
@@ -223,20 +230,29 @@
 \newcommand{\chaptitlefont}[1]{\Huge \bfseries #1}
 
 % セクションのスタイルを再定義
-\renewcommand{\section}{\@startsection{section}{1}{\z@}%
-  {1.5\Cvs \@plus .5\Cvs \@minus .2\Cvs}%
-  {.5\Cvs}%
-  {\reset@font\Large\bfseries}}
+\renewcommand{\section}{%
+  \pagestyle{plain}% ページスタイルをplainに設定
+  \@startsection{section}{1}{\z@}%
+    {1.5\Cvs \@plus .5\Cvs \@minus .2\Cvs}%
+    {.5\Cvs}%
+    {\reset@font\Large\bfseries}%
+}
 
-\renewcommand{\subsection}{\@startsection{subsection}{2}{\z@}%
-  {1.25\Cvs \@plus .5\Cvs \@minus .2\Cvs}%
-  {.25\Cvs}%
-  {\reset@font\large\bfseries}}
+\renewcommand{\subsection}{%
+  \pagestyle{plain}% ページスタイルをplainに設定
+  \@startsection{subsection}{2}{\z@}%
+    {1.25\Cvs \@plus .5\Cvs \@minus .2\Cvs}%
+    {.25\Cvs}%
+    {\reset@font\large\bfseries}%
+}
 
-\renewcommand{\subsubsection}{\@startsection{subsubsection}{3}{\z@}%
-  {1\Cvs \@plus .5\Cvs \@minus .2\Cvs}%
-  {.2\Cvs}%
-  {\reset@font\normalsize\bfseries}}
+\renewcommand{\subsubsection}{%
+  \pagestyle{plain}% ページスタイルをplainに設定
+  \@startsection{subsubsection}{3}{\z@}%
+    {1\Cvs \@plus .5\Cvs \@minus .2\Cvs}%
+    {.2\Cvs}%
+    {\reset@font\normalsize\bfseries}%
+}
 
 % 付録の設定
 \def\appendix{%

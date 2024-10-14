@@ -5,10 +5,10 @@
 ## ファイル構成
 
 - **main.tex**：メインのLaTeXソースファイル。ドキュメント全体の構成を定義します．
-- **jlisting.sty**：
-- **jtygm.sty**：
-- **listings.sty**：
-- **lab_thesis.cls**：
+- **jlisting.sty**：付録のソースコード出力用スタイルファイル
+- **jtygm.sty**：Warning対策
+- **listings.sty**：付録のソースコード出力用スタイルファイル
+- **lab_thesis.cls**：研究室用の論文クラスファイル
 - **preambles**：プリアンブル設定をまとめたディレクトリ．
   - **preamble.tex**：パッケージやコマンドの定義が含まれるファイル．
   - **numerical_formulas.tex**：数式用のコマンド定義が含まれるファイル．
@@ -33,51 +33,37 @@
 ### 2. 使いかた
 - 
 
-ターミナルまたはコマンドプロンプトで、ディレクトリ内に移動して以下のコマンドを実行します。
 
-```bash
-pdflatex main.tex
-bibtex main
-pdflatex main.tex
-pdflatex main.tex
-```
-
-または、`latexmk`を使用して自動ビルドできます。
-
-```bash
-latexmk -pdf main.tex
-```
 
 ### 3. コンテンツの編集
 
 - **章の追加・編集**：
-  - `chapters/`ディレクトリ内の`.tex`ファイルを編集します。
-  - 新しい章を追加する場合は、新しい`.tex`ファイルを作成し、`main.tex`で`\include{chapters/your_chapter}`を追加します。
+  - `documents/`ディレクトリ内の`.tex`ファイルを編集します．
+  - 新しい章を追加する場合は，新しい`.tex`ファイルを作成し，`main.tex`で`\include{./documents/your_chapter}`を追加します．
 - **図の挿入**：
-  - 画像ファイルを`figures/`ディレクトリに保存します。
-  - 本文中で`\includegraphics{figures/your_image}`を使用して挿入します。
+  - 画像ファイルを`images/`ディレクトリに保存します．
+  - 本文中で`\includegraphics{./images/your_image}`を使用して挿入します．
 - **参考文献の追加**：
-  - `bibliography.bib`にBibTeX形式で文献情報を追加します。
-  - 本文中で`\cite{your_reference}`を使用して引用します。
+  - `references/`ディレクトリの`reference_1.bib`にBibTeX形式で文献情報を追加します．
+  - 本文中で`\cite{your_reference_key}`を使用して引用します．
 
 ### 4. プリアンブルのカスタマイズ
 
-`preamble.tex`ファイルで、以下の設定を行えます。
+`preamble.tex`ファイルで，以下の設定を行えます．
 
-- **パッケージの追加**：必要なパッケージを`\usepackage{}`で追加します。
-- **コマンドの定義**：`\newcommand{}`や`\renewcommand{}`でカスタムコマンドを定義します。
-- **ページ設定**：マージンやフォントサイズなどを調整します。
+- **パッケージの追加**：必要なパッケージを`\usepackage{}`で追加します．
+- **コマンドの定義**：`\newcommand{}`や`\renewcommand{}`でカスタムコマンドを定義します．
 
 ## 注意事項
 
-- **コンパイルエラーの対処**：エラーが発生した場合、ログファイル（`.log`）を確認して原因を特定してください。
-- **パスの確認**：ファイルや画像のパスが正しいか確認してください。
-- **文字コード**：ソースファイルの文字コードはUTF-8を推奨します。
+- **コンパイルエラーの対処**：エラーが発生した場合，ログファイル（`.log`）を確認して原因を特定してください．
+- **パスの確認**：ファイルや画像のパスが正しいか確認してください．
+- **文字コード**：ソースファイルの文字コードはUTF-8を推奨します．
 
 ## ライセンス
 
-このプロジェクトはMITライセンスのもとで公開されています。詳細は[LICENSE](../LICENSE)ファイルを参照してください。
+このプロジェクトはMITライセンスのもとで公開されています．詳細は[LICENSE](../LICENSE)ファイルを参照してください．
 
 ## 問い合わせ
 
-質問や提案がありましたら、リポジトリの[Issueセクション](https://github.com/yuki2023-kenkyu/latex_templates/issues)までご連絡ください。
+質問や提案がありましたら，リポジトリの[Issueセクション](https://github.com/yuki2023-kenkyu/latex_templates/issues)までご連絡ください．
