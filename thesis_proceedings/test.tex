@@ -1,0 +1,37 @@
+\documentclass{proceedings}
+\usepackage{bmpsize}
+\usepackage{here}
+\usepackage{comment}
+\usepackage{amsmath, amssymb, amsthm, physics}
+\usepackage{mathtools}% あからさまに読み込む
+\usepackage{booktabs}
+\usepackage[dvipdfmx,colorlinks=false]{hyperref}
+\usepackage{pxjahyper}
+\usepackage{titlesec}
+\usepackage{wrapfig}
+\usepackage{caption}
+\usepackage{breqn}%数式dmath環境の使用
+
+\title{卒業研究発表会予稿集原稿作成見本}
+\author{物理・システム工学コース \quad 福島太郎\thanks{指導教員：馬塲一晴教授}}
+\date{6}
+
+\begin{document}
+
+    \maketitle
+
+    \input{documents/abstract.tex}
+    \vspace{5mm}
+
+    % 本文を2段組みにする
+    \begin{multicols}{2}
+        \input{documents/introduction.tex}
+        \input{documents/purpose.tex}
+        \input{documents/model.tex}
+        \input{documents/result.tex}
+        \input{documents/conclusion.tex}
+        \input{documents/reference.tex}
+    \end{multicols}
+    \vspace{-3\baselineskip} % 1行分の余白を削減
+
+\end{document}
