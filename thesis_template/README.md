@@ -36,7 +36,7 @@
 
 - **章の追加・編集**：
   - `documents/`ディレクトリ内の`.tex`ファイルを編集します．
-  - 新しい章を追加する場合は，新しい`.tex`ファイルを作成し，`main.tex`で`\include{./documents/your_chapter}`を追加します．
+  - 新しい章を追加する場合は，新しい`.tex`ファイルを作成し，`main.tex`で`\input{./documents/your_chapter}`を追加します．
 - **図の挿入**：
   - 画像ファイルを`images/`ディレクトリに保存します．
   - 本文中で`\includegraphics{./images/your_image}`を使用して挿入します．
