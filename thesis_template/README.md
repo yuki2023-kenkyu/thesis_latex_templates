@@ -29,9 +29,8 @@
   - `graphicx`
   - `hyperref`
   - その他，`preamble.tex`に記載のパッケージ
-- 付録のソースコード出力に関する準備
-1. `jlisting.sty` を C:\texlive\texmf-local\tex\latex\local\listings に置く（listingsディレクトリがなければ作成）．
-2. コマンドプロンプトを管理者モードで開き`mktexlsr`と入力し実行．
+- 本パッケージのダウンロード・解凍
+　- 適当なディレクトリに本パッケージを解凍してください． 
 
 ### 2. コンテンツの編集
 
