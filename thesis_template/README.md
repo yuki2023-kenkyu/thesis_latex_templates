@@ -6,6 +6,9 @@
 
 - **main.tex**：メインのLaTeXソースファイル．ドキュメント全体の構成を定義．
 - **lab_thesis.cls**：研究室用の論文クラスファイル．
+- **.vscode**：vscodeの設定ファイルをまとめたディレクトリ．
+  - **settings.json**：`thesis_template`内で適応される$\LaTeX$のコンパイル等の設定を記述した設定ファイル．
+  - **extensions.json**：本パッケージを実行する上でインストールを推奨するvscodeの拡張機能をまとめた設定ファイル．
 - **preambles**：プリアンブル設定をまとめたディレクトリ．
   - **packages.tex**：パッケージやコマンドの定義が含まれるファイル．
   - **numerical_formulas.tex**：数式用のコマンド定義が含まれるファイル．
