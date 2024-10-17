@@ -29,7 +29,7 @@
   - `amsmath`
   - `graphicx`
   - `hyperref`
-  - その他，`preamble.tex`に記載のパッケージ
+  - その他，`./preambles/packages.tex`に記載のパッケージ
 - vscodeをインストールしてください．
 
 ### 2. 実行方法
