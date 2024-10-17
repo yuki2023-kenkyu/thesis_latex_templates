@@ -11,7 +11,7 @@
   - **extensions.json**：本パッケージを実行する上でインストールを推奨するvscodeの拡張機能をまとめた設定ファイル．
 - **preambles**：プリアンブル設定をまとめたディレクトリ．
   - **packages.tex**：パッケージやコマンドの定義が含まれるファイル．
-  - **numerical_formulas.tex**：数式用のコマンド定義が含まれるファイル．
+  - **numerical_formulas.tex**：数式用のコマンド定義（自作マクロ）が含まれるファイル．
   - **jlisting.sty**：付録のソースコード出力用スタイルファイル．
   - **jtygm.sty**：フォントのWarning対策用スタイルファイル．
   - **listings.sty**：付録のソースコード出力用スタイルファイル．
@@ -55,13 +55,15 @@
 - **章の追加・編集**：
   - `documents/`ディレクトリ内の`.tex`ファイルを編集します．
   - 新しい章を追加する場合は，新しい`.tex`ファイルを作成し，`main.tex`で`\input{./documents/your_chapter}`を追加します．
+- **数式の自作マクロの追加**：
+  - `./preambles/numerical_formulas.tex`内に`\newcommand{}`を用いて論文中でよく用いる数式マクロを定義することができます．
 - **図の挿入**：
   - 画像ファイルを`images/`ディレクトリに保存します．
   - 本文中で`\includegraphics{./images/your_image}`を使用して挿入します．
 - **参考文献の追加**：
   - `references/`ディレクトリの`reference_1.bib`にBibTeX形式で文献情報を追加します．
   - 本文中で`\cite{your_reference_key}`を使用して引用します．
-- - **ソースコードの追加**：
+- **ソースコードの追加**：
   - `references/`ディレクトリの`reference_1.bib`にBibTeX形式で文献情報を追加します．
   - 本文中で`\cite{your_reference_key}`を使用して引用します．
 
