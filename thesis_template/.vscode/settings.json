@@ -77,7 +77,11 @@
       "name": "Biber",
       "command": "biber",
       "args": [
-        "%DOCFILE%"
+        "%DOCFILE%",
+        "--bblencoding=utf8",
+        "-u",
+        "-U",
+        "--output_safechars"
       ]
     },
     {
@@ -86,20 +90,6 @@
       "args": [
         "%DOCFILE%.pdf",
         "out"
-      ]
-    },
-    {
-      "name": "mendex",
-      "command": "mendex",
-      "args": [
-        "-r",
-        "-c",
-        "-g",
-        "-s",
-        "dot.ist",
-        "-p",
-        "any",
-        "%DOCFILE%.idx"
       ]
     },
     {
