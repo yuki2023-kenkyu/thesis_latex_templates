@@ -64,8 +64,8 @@
   - `references/`ディレクトリの`reference_1.bib`にBibTeX形式で文献情報を追加します．
   - 本文中で`\cite{your_reference_key}`を使用して引用します．
 - **ソースコードの追加**：
-  - `references/`ディレクトリの`reference_1.bib`にBibTeX形式で文献情報を追加します．
-  - 本文中で`\cite{your_reference_key}`を使用して引用します．
+  - `./source_codes/`ディレクトリに付録として出力したいソースコードを追加します．
+  - `./documents/appendix.tex`中で`\lstinputlisting[caption = 使用した数値解析コード, label = program2]{./source_codes/source_code_1.py}`のcaptionやlabel，引用したいソースコードのPATHを書き換えます．
 
 ### 4. プリアンブルのカスタマイズ
 
