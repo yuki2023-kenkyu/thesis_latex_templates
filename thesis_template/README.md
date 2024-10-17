@@ -53,19 +53,19 @@
 ### 3. コンテンツの編集
 
 - **章の追加・編集**：
-  - `documents/`ディレクトリ内の`.tex`ファイルを編集します．
+  - `./documents/`ディレクトリ内の`.tex`ファイルを編集します．
   - 新しい章を追加する場合は，新しい`.tex`ファイルを作成し，`main.tex`で`\input{./documents/your_chapter}`を追加します．
 - **数式の自作マクロの追加**：
   - `./preambles/numerical_formulas.tex`内に`\newcommand{}`を用いて論文中でよく用いる数式マクロを定義することができます．
 - **図の挿入**：
-  - 画像ファイルを`images/`ディレクトリに保存します．
+  - 画像ファイルを`./images/`ディレクトリに保存します．
   - 本文中で`\includegraphics{./images/your_image}`を使用して挿入します．
-- **参考文献の追加**：
-  - `references/`ディレクトリの`reference_1.bib`にBibTeX形式で文献情報を追加します．
-  - 本文中で`\cite{your_reference_key}`を使用して引用します．
-- **ソースコードの追加**：
+- **ソースコードの挿入**：
   - `./source_codes/`ディレクトリに付録として出力したいソースコードを追加します．
-  - `./documents/appendix.tex`中で`\lstinputlisting[caption = 使用した数値解析コード, label = program2]{./source_codes/source_code_1.py}`のcaptionやlabel，引用したいソースコードのPATHを書き換えます．
+  - `./documents/appendix.tex`中で`\lstinputlisting[caption = 使用した数値解析コード, label = program2]{./source_codes/your_source_codes_file}`コマンドのcaptionやlabel，引用したいソースコードのファイル名を書き換えます．
+  - **参考文献の追加**：
+  - `./references/`ディレクトリの`reference_1.bib`にBibTeX形式で文献情報を追加します．
+  - 本文中で`\cite{your_reference_key}`を使用して引用します．
 
 ### 4. プリアンブルのカスタマイズ
 
