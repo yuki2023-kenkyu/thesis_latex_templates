@@ -3,7 +3,7 @@
     "editor.wordWrap": "on",
     // 日本語の単語区切りを設定
     "editor.wordSeparators": "./\\()\"'-:,.;<>~!@#$%^&*|+=[]{}`~?。．、，（）「」『』［］｛｝《》てにをはがのともへでや ",
-    "editor.tabSize": 2,
+    "editor.tabSize": 4,
     "editor.insertSpaces": true,
     "editor.detectIndentation": false,
     "editor.suggestSelection": "recentlyUsedByPrefix",
@@ -154,6 +154,7 @@
     "*.fls",
     "*.log",
     "*.out",
+    "*out",
     "*.fdb_latexmk",
     "*.run.xml",
     "*.synctex.gz",
