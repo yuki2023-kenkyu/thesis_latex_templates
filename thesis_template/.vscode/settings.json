@@ -1,0 +1,260 @@
+{
+  "[latex]": {
+    "editor.wordWrap": "on",
+    // 日本語の単語区切りを設定
+    "editor.wordSeparators": "./\\()\"'-:,.;<>~!@#$%^&*|+=[]{}`~?。．、，（）「」『』［］｛｝《》てにをはがのともへでや ",
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true,
+    "editor.detectIndentation": false,
+    "editor.suggestSelection": "recentlyUsedByPrefix",
+    "editor.suggest.snippetsPreventQuickSuggestions": false,
+    "editor.quickSuggestions": {
+      "other": true,
+      "comments": false,
+      "strings": false
+    },
+    "editor.bracketPairColorization.enabled": true,
+    "editor.unicodeHighlight.invisibleCharacters": true,
+    "editor.unicodeHighlight.allowedCharacters": {
+      "，": true,
+      "．": true,
+      "！": true,
+      "？": true,
+      "［": true,
+      "］": true,
+      "｛": true,
+      "｝": true,
+      "＜": true,
+      "＞": true,
+    },
+    "editor.stickyScroll.enabled": true,
+    "files.trimTrailingWhitespace": true,
+  },
+  // https://qiita.com/fuku_uma/items/e5ad46125a9612320273
+  // https://everykalax.hateblo.jp/entry/2022/12/15/144238#%E4%BB%98%E9%8C%B2-BibLaTeX%E3%82%92%E4%BD%BF%E3%81%88%E3%82%8B%E3%82%88%E3%81%86%E3%81%AB%E3%81%99%E3%82%8B
+  // LaTeX Workshop ではビルド設定を「Tool」と「Recipe」という2つで考える
+  //   Tool: 実行される1つのコマンド。コマンド (command) と引数 (args) で構成される
+  //   Recipe: Tool の組み合わわせを定義する。Tool の組み合わせ (tools) で構成される。
+  //           tools の中で利用される Tool は "latex-workshop.latex.tools" で定義されている必要がある。
+  "latex-workshop.latex.recipes": [
+    {
+      //論文用レシピ
+      "name": "platex",
+      "tools": [
+        "platex",
+        "Biber",
+        "platex",
+        "mendex",
+        "platex",
+        "platex",
+        "dvipdfmx",
+        "move",
+        "delete"
+      ]
+    },
+  ],
+  "latex-workshop.latex.tools": [
+    {
+      "name": "platex",
+      "command": "platex",
+      "args": [
+        "-synctex=1",
+        "-interaction=nonstopmode",
+        "-file-line-error",
+        "-kanji=utf8",
+        "-shell-escape",
+        "%DOCFILE%.tex"
+      ]
+    },
+    {
+      "name": "dvipdfmx",
+      "command": "dvipdfmx",
+      "args": [
+        "%DOCFILE%.dvi"
+      ]
+    },
+    {
+      "name": "Biber",
+      "command": "biber",
+      "args": [
+        "%DOCFILE%"
+      ]
+    },
+    {
+      "name": "move",
+      "command": "copy",
+      "args": [
+        "%DOCFILE%.pdf",
+        "out"
+      ]
+    },
+    {
+      "name": "mendex",
+      "command": "mendex",
+      "args": [
+        "-r",
+        "-c",
+        "-g",
+        "-s",
+        "dot.ist",
+        "-p",
+        "any",
+        "%DOCFILE%.idx"
+      ]
+    },
+    {
+      "name": "delete",
+      "command": "del",
+      "args": [
+        "/q",
+        "%DOCFILE%.aux",
+        "%DOCFILE%.bbl",
+        "%DOCFILE%.bcf",
+        "%DOCFILE%.blg",
+        "%DOCFILE%.dvi",
+        "%DOCFILE%.idx",
+        "%DOCFILE%.ilg",
+        "%DOCFILE%.ind",
+        "%DOCFILE%.lof",
+        "%DOCFILE%.log",
+        "%DOCFILE%.lot",
+        "%DOCFILE%.out",
+        "%DOCFILE%.run.xml",
+        "%DOCFILE%.toc",
+        "%DOCFILE%.synctex.gz"
+      ]
+    }
+  ],
+  // latex-workshop.latex.magic.args: マジックコメント付きの LaTeX ドキュメントをビルドする設定
+  // '%!TEX' で始まる行はマジックコメントと呼ばれ、LaTeX のビルド時にビルドプログラムに解釈され、
+  // プログラムの挙動を制御する事ができる。
+  // 参考リンク: https://blog.miz-ar.info/2016/11/magic-comments-in-tex/
+  "latex-workshop.latex.magic.args": [
+    "-f",
+    "-gg",
+    "-pv",
+    "-synctex=1",
+    "-interaction=nonstopmode",
+    "-file-line-error",
+    "%DOC%"
+  ],
+  // latex-workshop.latex.clean.fileTypes: クリーンアップ時に削除されるファイルの拡張子
+  // LaTeX 文書はビルド時に一時ファイルとしていくつかのファイルを生成するが、最終的に必要となるのは
+  // PDF ファイルのみである場合などが多い。また、LaTeX のビルド時に失敗した場合、失敗時に生成された
+  // 一時ファイルの影響で、修正後のビルドに失敗してしまう事がよくある。そのため、一時的なファイルを
+  // 削除する機能 (クリーンアップ) が LaTeX Workshop には備わっている。
+  "latex-workshop.latex.clean.fileTypes": [
+    "*.aux",
+    "*.bbl",
+    "*.bcf",
+    "*.blg",
+    "*.idx",
+    "*.ind",
+    "*.lof",
+    "*.lot",
+    "*.out",
+    "*.toc",
+    "*.acn",
+    "*.acr",
+    "*.alg",
+    "*.glg",
+    "*.glo",
+    "*.gls",
+    "*.ist",
+    "*.fls",
+    "*.log",
+    "*.out",
+    "*.fdb_latexmk",
+    "*.run.xml",
+    "*.synctex.gz",
+    // for Beamer files
+    "_minted*",
+    "*.nav",
+    "*.snm",
+    "*.vrb"
+  ],
+  // latex-workshop.latex.autoClean.run: ビルド失敗時に一時ファイルのクリーンアップを行うかどうか
+  // 上記説明にもあったように、ビルド失敗時に生成された一時ファイルが悪影響を及ぼす事があるため、自動で
+  // クリーンアップがかかるようにしておく。
+  "latex-workshop.latex.autoClean.run": "onBuilt",
+  // latex-workshop.view.pdf.viewer: PDF ビューアの開き方
+  // VSCode 自体には PDF ファイルを閲覧する機能が備わっていないが、
+  // LaTeX Workshop にはその機能が備わっている。
+  // "tab" オプションを指定すると、今開いているエディタを左右に分割し、右側に生成されたPDFを表示するようにしてくれる
+  // この PDF ビュアーは LaTeX のビルドによって更新されると同期して内容を更新してくれる。
+  "latex-workshop.view.pdf.viewer": "tab",
+  // latex-workshop.latex.autoBuild.run: .tex ファイルの保存時に自動的にビルドを行うかどうか
+  // LaTeX ファイルは .tex ファイルを変更後にビルドしないと、PDF ファイル上に変更結果が反映されないため、
+  // .tex ファイルの保存と同時に自動的にビルドを実行する設定があるが、文書が大きくなるに連れてビルドにも
+  // 時間がかかってしまい、ビルドプログラムの負荷がエディタに影響するため、無効化しておく。
+  "latex-workshop.latex.autoBuild.run": "never",
+  "[tex]": {
+    // スニペット補完中にも補完を使えるようにする
+    "editor.suggest.snippetsPreventQuickSuggestions": false,
+    // インデント幅を2にする
+    "editor.tabSize": 2
+  },
+  //https://qiita.com/Yarakashi_Kikohshi/items/8f720643543ba175f7cc
+  "[bibtex]": {
+    "editor.wordWrap": "off",
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true,
+    "files.trimTrailingWhitespace": true,
+  },
+  // Intellisense for BibTeX
+  "latex-workshop.intellisense.citation.maxfilesizeMB": 5,
+  "latex-workshop.intellisense.citation.label": "title",
+  "latex-workshop.intellisense.citation.type": "inline",
+  "latex-workshop.intellisense.citation.format": [
+    "author",
+    "title",
+    "journal",
+    "publisher",
+    "booktitle",
+    "year"
+  ],
+  // Basic format settings
+  "latex-workshop.bibtex-format.tab": "2 spaces",
+  "latex-workshop.bibtex-format.case": "lowercase",
+  "latex-workshop.bibtex-format.surround": "Curly braces",
+  "latex-workshop.bibtex-format.trailingComma": true,
+  "latex-workshop.bibtex-format.handleDuplicates": "Comment Duplicates",
+  // Align "="
+  "latex-workshop.bibtex-format.align-equal.enabled": true,
+  // Sort fields
+  "latex-workshop.bibtex-fields.sort.enabled": true,
+  "latex-workshop.bibtex-fields.order": [
+    "title",
+    // writer
+    "author",
+    "editor",
+    // date
+    "year",
+    // organization
+    "journal",
+    "publisher",
+    "school",
+    "institution",
+  ],
+  // Sort bib order
+  "latex-workshop.bibtex-format.sort.enabled": true,
+  "latex-workshop.bibtex-format.sortby": [
+    "key"
+  ],
+  // 使用パッケージのコマンドや環境の補完を有効にする
+  "latex-workshop.intellisense.package.enabled": true,
+  // 生成ファイルを "out" ディレクトリに吐き出す
+  //"latex-workshop.latex.outDir": "out",
+  "editor.unicodeHighlight.allowedCharacters": {
+    "，": true,
+    "．": true
+  },
+  //レシピの設定
+  "latex-workshop.latex.recipe.default": "lastUsed",
+  // コンパイル時にPDFをカーソル位置で表示
+  "latex-workshop.synctex.afterBuild.enabled": true
+  // 日本語文書特有の LaTeX Font Warning を警告表示に含めないようにする
+  // "latex-workshop.message.latexlog.exclude": [
+  //   "(Font shape `(JY1|JT1|JY2|JT2)(/.*)(sl|it|sc)'.*|Some font shapes were not available.*)"
+  // ],
+}
