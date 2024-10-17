@@ -34,6 +34,8 @@
 
 ### 2. 実行
 
+以下の手順に従い`main.tex`を実行してください．
+
 - vscodeを開き，「フォルダを開く」で`latex_templates`内の`thesis_template`を指定．
 - `./preambles/packages.tex` について以下のように一部書き換え
   - 上から16行目当たりの`\usepackage{./preambles/listings, ./preambles/jlisting, color}`をコメント化
