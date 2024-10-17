@@ -29,15 +29,14 @@
   - `graphicx`
   - `hyperref`
   - その他，`preamble.tex`に記載のパッケージ
-- 付録のソースコード出力に関する準備
-1. `jlisting.sty` を C:\texlive\texmf-local\tex\latex\local\listings に置く（listingsディレクトリがなければ作成）．
-2. コマンドプロンプトを管理者モードで開き`mktexlsr`と入力し実行．
+- 本パッケージのダウンロード・解凍
+　- 適当なディレクトリに本パッケージを解凍してください． 
 
 ### 2. コンテンツの編集
 
 - **章の追加・編集**：
   - `documents/`ディレクトリ内の`.tex`ファイルを編集します．
-  - 新しい章を追加する場合は，新しい`.tex`ファイルを作成し，`main.tex`で`\include{./documents/your_chapter}`を追加します．
+  - 新しい章を追加する場合は，新しい`.tex`ファイルを作成し，`main.tex`で`\input{./documents/your_chapter}`を追加します．
 - **図の挿入**：
   - 画像ファイルを`images/`ディレクトリに保存します．
   - 本文中で`\includegraphics{./images/your_image}`を使用して挿入します．
