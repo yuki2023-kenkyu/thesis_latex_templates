@@ -49,7 +49,7 @@
   \setlength\paperwidth{\@tempdima}}
 
 % デフォルトオプションを実行
-\ExecuteOptions{a4paper,10pt,oneside,onecolumn,final,openany}
+\ExecuteOptions{a4paper,12pt,oneside,onecolumn,final,openany}
 \ProcessOptions\relax  % オプションを処理
 
 % ベースとなるクラスファイルを読み込み（jbookに変更）
