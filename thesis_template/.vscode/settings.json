@@ -43,8 +43,8 @@
       "tools": [
         "platex",
         "Biber",
-        "platex",
-        "mendex",
+        //"platex",
+        //"mendex",
         "platex",
         "platex",
         "dvipdfmx",
