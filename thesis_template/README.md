@@ -38,7 +38,7 @@
 - `./preambles/packages.tex` について以下のように一部書き換え
   - 上から16行目当たりの`\usepackage{./preambles/listings, ./preambles/jlisting, color}`をコメント化
   - その1行下のコメントを外し有効化
-- `main.tex`を`Ctrl+Alt+B`を押して実行してください．
+- `main.tex`を開き`Ctrl+Alt+B`を押して実行してください．
 
 ### 3. コンテンツの編集
 
