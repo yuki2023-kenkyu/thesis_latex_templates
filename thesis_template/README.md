@@ -30,9 +30,17 @@
   - `hyperref`
   - その他，`preamble.tex`に記載のパッケージ
 - 本パッケージのダウンロード・解凍
-　- 適当なディレクトリに本パッケージを解凍してください． 
+　- 適当なディレクトリに本パッケージを解凍してください．
 
-### 2. コンテンツの編集
+### 2. 実行
+
+- vscodeを開き，「フォルダを開く」で`latex_templates`内の`thesis_template`を指定．
+- `./preambles/packages.tex` について以下のように一部書き換え
+  - 上から16行目当たりの`\usepackage{./preambles/listings, ./preambles/jlisting, color}`をコメント化
+  - その1行下のコメントを外し有効化
+- `main.tex`を`Ctrl+Alt+B`を押して実行してください．
+
+### 3. コンテンツの編集
 
 - **章の追加・編集**：
   - `documents/`ディレクトリ内の`.tex`ファイルを編集します．
@@ -44,7 +52,7 @@
   - `references/`ディレクトリの`reference_1.bib`にBibTeX形式で文献情報を追加します．
   - 本文中で`\cite{your_reference_key}`を使用して引用します．
 
-### 3. プリアンブルのカスタマイズ
+### 4. プリアンブルのカスタマイズ
 
 `preamble.tex`ファイルで，以下の設定を行えます．
 
