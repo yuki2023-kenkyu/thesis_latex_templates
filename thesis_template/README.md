@@ -63,7 +63,7 @@
 - **ソースコードの挿入**：
   - `./source_codes/`ディレクトリに付録として出力したいソースコードを追加します．
   - `./documents/appendix.tex`中で`\lstinputlisting[caption = 使用した数値解析コード, label = program2]{./source_codes/your_source_codes_file}`コマンドのcaptionやlabel，引用したいソースコードのファイル名を書き換えます．
-  - **参考文献の追加**：
+- **参考文献の追加**：
   - `./references/`ディレクトリの`reference_1.bib`にBibTeX形式で文献情報を追加します．
   - 本文中で`\cite{your_reference_key}`を使用して引用します．
 
