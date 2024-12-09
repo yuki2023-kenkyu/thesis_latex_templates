@@ -2,7 +2,7 @@
 % プリアンブル
 \input{./preambles/packages.tex}
 % 自作した数式のマクロ
-\input{./preambles/numerical_formulas.tex}
+\input{./preambles/macros.tex}
 
 % 論文情報の設定
 \Title{論文タイトル}
@@ -28,17 +28,16 @@
     % ページ番号をアラビア数字に戻す
     \pagenumbering{arabic}
     % 本文の開始
-    \input{./documents/introduction.tex}
-    \input{./documents/main_text_1.tex}
-    \input{./documents/main_text_2.tex}
-    \input{./documents/main_text_3.tex}
-    \input{./documents/main_text_4.tex}
-    \input{./documents/main_text_5.tex}
-    \input{./documents/conclusion.tex}
+    \input{./documents/序論.tex}
+    \input{./documents/latexの使いかた.tex}
+    \input{./documents/テンプレートの使いかた.tex}
+    \input{./documents/論文の書き方.tex}
+    \input{./documents/論文提出について.tex}
+    %\input{./documents/結論.tex}
     % 謝辞
-    \input{documents/thanks.tex}
+    \input{./documents/謝辞.tex}
     % 付録の開始
-    \input{./documents/appendix.tex}
+    \input{./documents/付録.tex}
     % 参考文献の出力
     \printbibliography[title=参考文献]
 \end{document}

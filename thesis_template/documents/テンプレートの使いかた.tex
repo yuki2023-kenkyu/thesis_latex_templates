@@ -1,15 +1,21 @@
-\chapter{\LaTeX の基本}
+\chapter{本テンプレートの使いかた}
+この論文テンプレートは，熊本大学 岡島寛先生らの卒論・修論テンプレートを参考に作成しています\cite{卒論修論テンプレート}．
+    \section{基本的な使用方法}
+    詳細は次のURLの`README`の内容を参考にしてください\url{https://github.com/yuki2023-kenkyu/latex_templates/tree/main/thesis_template}
 	\section{参考文献の引用方法}
 	参考文献を論文中で引用するときはref.bibファイルに参考文献情報を貼り付けたうえで次のように引用しましょう\cite{G_ng_r_2021}．
 	\section{数式について}
 	文中式は $\hat{g}_{\mu\nu}=e^{2\omega}g_{\mu\nu}$ と書けます．その他別行立ての数式は次のような数式環境を用いて入力します．
-
-	よく使用する数式については，./preambles/numerical\_formulas.texに，newcommandでマクロを定義しておくと便利です．
+        \begin{equation}
+            \hat{R}_{\mu\nu} - \frac{1}{2}\hat{g}_{\mu\nu}\hat{R} = 8\pi G\hat{T}_{\mu\nu}\label{eq:Einstein_eq}
+        \end{equation}
+	よく使用する数式については，./preambles/macros.texに，newcommandでマクロを定義しておくと便利です．
 		\begin{equation}
 			R_{\mu\alpha\nu}^{\lambda}=\Riemanntensor{\lambda}{\mu}{\alpha}{\nu}{\sigma}\label{eq:Riemann_tensor}
 		\end{equation}
 
 	また，複数行にわたる数式変形をきれいに出力したいときは，dmath環境を用いると便利です．dmath環境では数式を自動で改行したり，等号の位置を自動で揃えてくれます．
+    
 		\begin{dmath}
 			R_{rr} = \partial_{\lambda}\chr{\lambda}{r}{r}
 			- \partial_{r}\chr{\lambda}{\lambda}{r}
@@ -29,13 +35,3 @@
 
 	その他，数式を入力する際には，physicsパッケージを用いるのが便利です（usepackageしてあります）．
 
-	\section{図の挿入と引用}
-	図は以下のように挿入できます．
-		\begin{figure}[htbp]
-			\centering
-			\includegraphics[width=1.0\linewidth,keepaspectratio]{./images/論文様式.png}
-			\caption{論文の様式}
-			\label{fig:overview}
-		\end{figure}
-
-	また，文中の図を引用したい場合は，図にラベルを付けて\cref{fig:overview}としましょう．
