@@ -277,8 +277,8 @@
 }
 
 % 謝辞を出力するコマンドの定義
-\def\thanks{\chapter*{謝 辞}%
-  \addcontentsline{toc}{chapter}{謝 辞}}% 目次に追加
+\def\thanks{\chapter*{謝 辞}}%
+%  \addcontentsline{toc}{chapter}{謝 辞}}% 目次に追加
 \def\endthanks{\par\vfil\null}
 
 % 文字間隔の調整（日本語用）

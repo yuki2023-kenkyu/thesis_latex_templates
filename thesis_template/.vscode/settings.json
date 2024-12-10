@@ -78,8 +78,8 @@
       "name": "Biber",
       "command": "biber",
       "args": [
-        "--output-directory=%OUTDIR%",
         "%DOCFILE%",
+        "--output-directory=%OUTDIR%",
         "--bblencoding=utf8",
         "-u",
         "-U",
@@ -99,6 +99,7 @@
       "command": "del",
       "args": [
         "/q",
+        "out",
         "%DOCFILE%.aux",
         "%DOCFILE%.bbl",
         "%DOCFILE%.bcf",
@@ -156,7 +157,7 @@
     "*.fls",
     "*.log",
     "*.out",
-    "*out",
+    "out",
     "*.fdb_latexmk",
     "*.run.xml",
     "*.synctex.gz",
@@ -246,7 +247,8 @@
   //レシピの設定
   "latex-workshop.latex.recipe.default": "lastUsed",
   // コンパイル時にPDFをカーソル位置で表示
-  "latex-workshop.synctex.afterBuild.enabled": true
+  "latex-workshop.synctex.afterBuild.enabled": true,
+  "latex-workshop.bibtex.engine": "biber"
   // 日本語文書特有の LaTeX Font Warning を警告表示に含めないようにする
   // "latex-workshop.message.latexlog.exclude": [
   //   "(Font shape `(JY1|JT1|JY2|JT2)(/.*)(sl|it|sc)'.*|Some font shapes were not available.*)"
