@@ -45,6 +45,7 @@
         "Biber",
         //"platex",
         //"mendex",
+        "Biber",
         "platex",
         "platex",
         "dvipdfmx",
@@ -195,6 +196,7 @@
   },
   // Intellisense for BibTeX
   "latex-workshop.intellisense.citation.maxfilesizeMB": 5,
+  "latex-workshop.intellisense.citation.backend": "biblatex",
   "latex-workshop.intellisense.citation.label": "title",
   "latex-workshop.intellisense.citation.type": "inline",
   "latex-workshop.intellisense.citation.format": [
