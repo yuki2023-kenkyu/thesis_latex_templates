@@ -45,7 +45,7 @@
         "Biber",
         //"platex",
         //"mendex",
-        "Biber",
+        //"Biber",
         "platex",
         "platex",
         "dvipdfmx",
@@ -181,7 +181,7 @@
   // LaTeX ファイルは .tex ファイルを変更後にビルドしないと、PDF ファイル上に変更結果が反映されないため、
   // .tex ファイルの保存と同時に自動的にビルドを実行する設定があるが、文書が大きくなるに連れてビルドにも
   // 時間がかかってしまい、ビルドプログラムの負荷がエディタに影響するため、無効化しておく。
-  "latex-workshop.latex.autoBuild.run": "never",
+  "latex-workshop.latex.autoBuild.run": "onFileChange",//不可が高い場合は"never"にする
   "[tex]": {
     // スニペット補完中にも補完を使えるようにする
     "editor.suggest.snippetsPreventQuickSuggestions": false,
