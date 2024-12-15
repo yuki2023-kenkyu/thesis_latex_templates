@@ -4,6 +4,10 @@
     詳細は次のURLの`README`の内容を参考にしてください\url{https://github.com/yuki2023-kenkyu/latex_templates/tree/main/thesis_template}
 	\section{参考文献の引用方法}
 	参考文献を論文中で引用するときはref.bibファイルに参考文献情報を貼り付けたうえで次のように引用しましょう\cite{G_ng_r_2021}．
+
+    ※ADSにおけるbibtexファイルのジャーナル欄の独自コマンド（\apj）にも出力できるよう対応しました\cite{2023ApJ...944..124T}．
+
+    ※\cite{小形正男2024-09-21}．\cite{梶野洸2024-01-19}．
 	\section{数式について}
 	文中式は $\hat{g}_{\mu\nu}=e^{2\omega}g_{\mu\nu}$ と書けます．その他別行立ての数式は次のような数式環境を用いて入力します．
         \begin{equation}
@@ -15,7 +19,7 @@
 		\end{equation}
 
 	また，複数行にわたる数式変形をきれいに出力したいときは，dmath環境を用いると便利です．dmath環境では数式を自動で改行したり，等号の位置を自動で揃えてくれます．
-    
+
 		\begin{dmath}
 			R_{rr} = \partial_{\lambda}\chr{\lambda}{r}{r}
 			- \partial_{r}\chr{\lambda}{\lambda}{r}
