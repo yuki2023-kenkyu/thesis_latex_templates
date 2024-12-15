@@ -45,9 +45,6 @@
 - vscodeのワークスペースとして「フォルダを開く」で`latex_templates`内の`thesis_template`を指定．
 - 「おすすめの拡張機能」として表示される拡張機能をインストール
   - `.vscode/extensions.json`に記載の拡張機能が表示されます．
-- `./preambles/packages.tex` について以下のように一部書き換え
-  - 上から16行目当たりの`\usepackage{./preambles/listings, ./preambles/jlisting, color}`をコメント化
-  - その1行下のコメントを外し`\usepackage{listings, ./preambles/jlisting, color}`を有効化
 - `main.tex`を開き`Ctrl+Alt+B`を押して実行してください．
 
 ### 3. コンテンツの編集
