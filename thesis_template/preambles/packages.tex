@@ -8,41 +8,26 @@
 \usepackage{mathtools}% あからさまに読み込む
 \usepackage{booktabs}
 \usepackage[dvipdfmx,colorlinks=false]{hyperref}
-\usepackage{pxjahyper}
+\usepackage{pxjahyper}%hyperrefの不具合対策
 \usepackage{titlesec}
 \usepackage{wrapfig}
 \usepackage{enumerate}
 \usepackage{caption}
 \usepackage{breqn}%数式dmath環境の使用
-\usepackage{./preambles/listings, ./preambles/jlisting, color}% これをコメント化
-% \usepackage{listings, ./preambles/jlisting, color}% こちらのコメントを外す
+%\usepackage{./preambles/listings, ./preambles/jlisting, color}% これをコメント化
+\usepackage{listings, ./preambles/jlisting, color}% こちらのコメントを外す
 \usepackage{cleveref}
+% \usepackage{autonum}%参照していない数式には番号をつけない
 \usepackage[version=4]{mhchem}%化学式
-%\usepackage[compat=1.0.0]{tikz-feynman}
 \usepackage{siunitx}%単位の表記
+% \usepackage{japanese,english}[babel]
+\usepackage{ifthen}
 \usepackage[%
 	backend=biber,
 	style=numeric,
 	sorting=none
 ]{biblatex}
-\ExecuteBibliographyOptions{
-  	sortcites=true,%\cite{}の中に書いた順番通りの出力する(falseなら並び替えない)
-  	date=year,%dateの表示はyearのみにする
-  	urldate=iso,%urldateの表示はyyyy-mm-ddにする
-    seconds=true,
-  	maxnames=8,%著者がmaxnamesを超えるときminnamesの数まで省略する
-  	minnames=3,
-  	%maxbibnames=99,%参考文献では99人まで著者を載せる
-  	%backref=true,%引用したページを文献リストに表示する
-  	%backrefstyle=none,%ページが連続するときの省略(デフォルトでthree)。省略させたくないときはnoneにする
-	abbreviate=true,
-  	isbn=false,%isbnを出力しない
-  	url=false,
-  	doi=true,
-	arxiv=abs,
-  	eprint=true,
-	backref=true
-}
+
 % 参考文献ファイルの読み込み
 \addbibresource{./references/reference_1.bib}
 
