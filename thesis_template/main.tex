@@ -18,15 +18,20 @@
 % \doctor %博士論文の場合はコメントを外しコマンドを有効化
 
 \begin{document}
+    % 目次の挿入
+    \renewcommand{\contentsname}{目 次}
+    % 「図」の表示名を変更
+    \renewcommand{\figurename}{Fig.}
+    \renewcommand{\tablename}{Table.}
     % 表紙の作成
     \Maketitle
     % ページ番号をローマ数字に変更
     \pagenumbering{roman}
-    % 目次の挿入
     \tableofcontents
     \clearpage
     % ページ番号をアラビア数字に戻す
     \pagenumbering{arabic}
+
     % 本文の開始
     \input{./documents/introduction.tex}
     \input{./documents/main_contents_1.tex}
@@ -40,5 +45,5 @@
     \input{./documents/thanks.tex}
     % 参考文献の出力
     \printbibliography[title=参考文献]
-    
+
 \end{document}
