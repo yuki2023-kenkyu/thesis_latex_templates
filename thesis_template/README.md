@@ -63,6 +63,7 @@
 - **参考文献の追加**：
   - `./references/`ディレクトリの`reference_1.bib`にBibTeX形式で文献情報を追加します．
   - 本文中で`\cite{your_reference_key}`を使用して引用します．
+  - 日本語文献の情報を挿入する場合，最後に`{langid} = {japanese}`を挿入してください．
 
 ### 4. プリアンブルのカスタマイズ
 
