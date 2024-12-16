@@ -1,3 +1,4 @@
+\usepackage[japanese,english]{babel}
 \usepackage{./preambles/jtygm}%%%%%%%%%%%%%%%%%Font Warning対策%%%%%
 \usepackage{./preambles/ads_ref}%%%%%%%%%%%%%%%%%Font Warning対策%%%%%
 \usepackage[dvipdfmx]{graphicx}
@@ -19,8 +20,6 @@
 % \usepackage{autonum}%参照していない数式には番号をつけない
 \usepackage[version=4]{mhchem}%化学式
 \usepackage{siunitx}%単位の表記
-% \usepackage{japanese,english}[babel]
-\usepackage{ifthen}
 \usepackage[%
 	backend=biber,
 	style=numeric,
@@ -51,9 +50,6 @@
 % 図のキャプションのカスタマイズ
 % https://karat5i.blogspot.com/2014/10/latex.html
 \captionsetup[figure]{format=plain, labelformat=simple, labelsep=space, font=footnotesize}
-% 「図」の表示名を変更
-\renewcommand{\figurename}{Fig.}
-\renewcommand{\tablename}{Table.}
 % 図，表番号を"<章番号>.<図番号>” ，"<章番号>.<表番号>” へ
 \renewcommand{\thefigure}{\thechapter.\arabic{figure}}
 \renewcommand{\thetable}{\thechapter.\arabic{table}}
