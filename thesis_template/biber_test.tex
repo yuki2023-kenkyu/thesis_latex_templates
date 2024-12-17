@@ -1,5 +1,6 @@
 \documentclass{jsarticle}
-\usepackage[backend=biber]{biblatex}
+\usepackage[backend=biber, bibstyle=numeric]{biblatex}
+\usepackage{./preambles/biblatex-journal-style}
 
 \addbibresource{./references/reference_1.bib}
 
@@ -10,8 +11,8 @@
 \begin{document}
 
 \maketitle
-これはサンプル文書です。文献を参照します~\cite{G_ng_r_2021}。
-
+これはサンプル文書です。文献を参照します。
+\nocite{*}
 \printbibliography[title=参考文献]
 
 \end{document}
