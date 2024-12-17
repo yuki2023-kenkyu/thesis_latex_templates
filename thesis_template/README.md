@@ -6,12 +6,14 @@
 
 - **main.tex**：メインの$\LaTeX$ソースファイル．ドキュメント全体の構成を定義．
 - **lab_thesis.cls**：研究室用の論文クラスファイル．
+- **biblatex.cfg**：参考文献の出力形式を制御するbiblatex用の設定ファイル．
 - **.vscode**：vscodeの設定ファイルをまとめたディレクトリ．
-  - **settings.json**：`thesis_template`内で適応される$\LaTeX$のコンパイル等の設定を記述した設定ファイル．
+  - **settings.json**：`thesis_template`内で適応される$\LaTeX$のコンパイルレシピ等の設定を記述した設定ファイル．
   - **extensions.json**：本パッケージを実行する上でインストールを推奨するvscodeの拡張機能をまとめた設定ファイル．
 - **preambles**：プリアンブル設定をまとめたディレクトリ．
   - **packages.tex**：パッケージやコマンドの定義が含まれるファイル．
   - **macros.tex**：コマンド定義（自作マクロ）が含まれるファイル．
+  - **ads_ref.sty**：ADSのbibtexファイルの独自コマンドを使えるよう定義したスタイルファイル．
   - **jlisting.sty**：付録のソースコード出力用スタイルファイル．
   - **jtygm.sty**：フォントのWarning対策用スタイルファイル．
   - **listings.sty**：付録のソースコード出力用スタイルファイル．
@@ -27,7 +29,7 @@
 
 ### 1. 環境の準備
 
-- **LaTeXディストリビューション**：TeX LiveやMiKTeXなどをインストールしてください．
+- **LaTeXディストリビューション**：最新のTeX LiveやMiKTeXなどをインストールしてください．
 - **必要なパッケージ**：以下のパッケージが必要です。インストールされていない場合は追加してください．
   - `amsmath`
   - `graphicx`
@@ -63,20 +65,23 @@
 - **参考文献の追加**：
   - `./references/`ディレクトリの`reference_1.bib`にBibTeX形式で文献情報を追加します．
   - 本文中で`\cite{your_reference_key}`を使用して引用します．
-  - 日本語文献の情報を挿入する場合，最後に`langid = {japanese}`を挿入してください．
+  - 日本語文献の情報を挿入する場合，`reference_1.bib`に追加した文献情報フィールドの最後に`langid = {japanese}`を追記してください．
+  - 新たに`.bib`ファイルを追加する際は`./references/`内に追加し，`./preambles/packages.tex`の`\addbibresource{./references/reference_1.bib}`のすぐ下に`\addbibresoiurce{./references/追加したファイルの名前.bib}`と追記してください．
 
 ### 4. プリアンブルのカスタマイズ
 
 `./preambles/packages.tex`ファイルで，以下の設定を行えます．
 
 - **パッケージの追加**：必要なパッケージを`\usepackage{}`で追加します．
-- **コマンドの定義**：`\newcommand{}`や`\renewcommand{}`でカスタムコマンドを定義します．
+- **数式番号の出力形式の変更**：`\numberwithin{equation}{section}`部分を変更することにより数式番号の出力形式を変更できます．
+- **図・表番号の出力形式の変更**：`\renewcommand{\thefigure}{\thechapter.\arabic{figure}}`部分を変更することにより図や表番号の出力形式を変更できます．
+- **cleverefの設定**：`crefname`等の設定を変更できます．
 
 ## 注意事項
 
 - **コンパイルエラーの対処**：エラーが発生した場合，ログファイル（`.log`）を確認して原因を特定してください．
 - **パスの確認**：ファイルや画像のパスが正しいか確認してください．
-- **文字コード**：ソースファイルの文字コードはUTF-8を推奨します．
+- **文字コード**：ソースファイルの文字コードは必ずUTF-8にしてください．
 
 ## ライセンス
 
