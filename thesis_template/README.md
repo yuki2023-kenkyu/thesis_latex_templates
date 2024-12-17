@@ -13,7 +13,7 @@
 - **preambles**：プリアンブル設定をまとめたディレクトリ．
   - **packages.tex**：パッケージやコマンドの定義が含まれるファイル．
   - **macros.tex**：コマンド定義（自作マクロ）が含まれるファイル．
-  - **ads_ref.sty**：ADSのbibtexファイルの独自コマンドを使えるよう定義したスタイルファイル．
+  - **biblatex-journal-style.sty**：ADSのbibtexファイルの独自コマンドを使えるよう定義したスタイルファイル．
   - **jlisting.sty**：付録のソースコード出力用スタイルファイル．
   - **jtygm.sty**：フォントのWarning対策用スタイルファイル．
   - **listings.sty**：付録のソースコード出力用スタイルファイル．
