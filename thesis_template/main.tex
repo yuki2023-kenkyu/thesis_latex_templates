@@ -18,7 +18,7 @@
 % \doctor %博士論文の場合はコメントを外しコマンドを有効化
 
 \begin{document}
-    % 目次の挿入
+    % 目次の表示名を変更
     \renewcommand{\contentsname}{目 次}
     % 「図」の表示名を変更
     \renewcommand{\figurename}{Fig.}
@@ -27,6 +27,7 @@
     \Maketitle
     % ページ番号をローマ数字に変更
     \pagenumbering{roman}
+    % 目次の挿入
     \tableofcontents
     \clearpage
     % ページ番号をアラビア数字に戻す
