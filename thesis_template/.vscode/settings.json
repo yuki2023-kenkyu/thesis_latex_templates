@@ -48,18 +48,18 @@
         "delete"
       ]
     },
-    // {
-    //   // LuaLaTeX用の新しいレシピ
-    //   "name": "lualatex",
-    //   "tools": [
-    //     "lualatex",
-    //     "Biber",
-    //     "lualatex",
-    //     "lualatex",
-    //     "move",
-    //     "delete"
-    //   ]
-    // }
+    {
+      // LuaLaTeX用の新しいレシピ
+      "name": "lualatex",
+      "tools": [
+        "lualatex",
+        "Biber",
+        "lualatex",
+        "lualatex",
+        "move",
+        "delete"
+      ]
+    }
   ],
 
   "latex-workshop.latex.tools": [
@@ -180,7 +180,7 @@
   ],
   "latex-workshop.latex.autoClean.run": "onBuilt",
   "latex-workshop.view.pdf.viewer": "tab",
-  "latex-workshop.latex.autoBuild.run": "onFileChange",
+  "latex-workshop.latex.autoBuild.run": "onSave",
   "[tex]": {
     "editor.suggest.snippetsPreventQuickSuggestions": false,
     "editor.tabSize": 2

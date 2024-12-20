@@ -1,0 +1,10 @@
+% 図の挿入用マクロ
+\newcommand{\figimage}[4]{\begin{figure}[phtb]\centering\includegraphics[keepaspectratio, scale = #4]{#1}\caption{#2}\label{#3}\end{figure}}
+% Christoffel記号
+\newcommand{\chr}[3]{\Gamma^{#1}_{#2 #3}}
+% クロネッカーのデルタ
+\newcommand{\chron}[2]{\delta^{#1}_{#2}}
+%Riemannテンソル
+\newcommand{\Riemanntensor}[5]{
+  \partial_{#3}\Gamma^{#1}_{#2 #4} - \partial_{#4}\Gamma^{#1}_{#2 #3} + \Gamma^{#1}_{#3 #5}\Gamma^{#5}_{#2 #4} - \Gamma^{#1}_{#4 #5}\Gamma^{#5}_{#2 #3}
+}

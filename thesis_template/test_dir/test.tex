@@ -1,0 +1,29 @@
+\documentclass[12pt]{japanese_thesis}
+\usepackage{./preambles/packages_lualatex}
+% 参考文献ファイルの読み込み
+\addbibresource{../references/reference_1.bib}
+\usepackage{./preambles/macros}
+
+% 表紙の出力情報の設定
+% \SetMasterThesis % 修士論文の場合コメントを外す
+% \SetDoctoralThesis % 博士論文の場合コメントを外す
+\Title{チュートリアル} % タイトル
+\StudentNumber{212270040} % 学籍番号
+\Author{物理　\ 太郎} % 著者名
+\Professor{物理　\ 花子} % 指導教員名
+\DateofSubmission{6} % 年度
+
+\begin{document}
+    \input{./preambles/name_def.tex}
+    \Maketitle % これで出力
+    \tableofcontents
+    \clearpage
+    % ページ番号をアラビア数字に戻す
+    \pagenumbering{arabic}
+    \chapter{はじめに}
+    ここに本文を書きます。
+    \chapter{おわりに}
+    この世の終わりです。
+    \nocite{*}
+    \printbibliography[title=参考文献]
+\end{document}

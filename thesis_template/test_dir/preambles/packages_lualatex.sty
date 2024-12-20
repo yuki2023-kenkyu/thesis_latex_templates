@@ -1,43 +1,36 @@
 % LuaLaTeX + luatexja + bxjsreportを前提とした例
-
-% 英語はbabelで、和文はluatexjaで処理
-%\usepackage{csquotes}
-\usepackage[japanese,english]{babel}
-\usepackage{./preambles/jtygm}%%%%%%%%%%%%%%%%%Font Warning対策%%%%%
-\usepackage{./preambles/biblatex-journal-style} % 削除または環境に応じて修正
+\usepackage[english]{babel} % 必要なら英語環境を有効化
 
 % ドライバ非依存でgraphicx読み込み
-\usepackage[dvipdfmx]{graphicx}
+\usepackage{graphicx}
 \usepackage{bmpsize}
 \usepackage{here}
+\usepackage{url}
 \usepackage{comment}
 \usepackage{amsmath, amssymb, amsthm, physics}
 \usepackage{mathtools}
 \usepackage{booktabs}
 
 % hyperrefはdvipdfmxオプションを外して使用
-\usepackage[dvipdfmx,colorlinks=false]{hyperref}
-\usepackage{pxjahyper}%hyperrefの不具合対策
+\usepackage[colorlinks=false]{hyperref}
 \usepackage{titlesec}
 \usepackage{wrapfig}
 \usepackage{enumerate}
 \usepackage{caption}
 \usepackage{breqn} % dmath環境などはLuaLaTeXでも利用可能
-\usepackage{listings, jvlisting, color}
+\usepackage{listings, color}
 \usepackage{cleveref}
 % \usepackage{autonum} % 必要なら使用可 (LuaLaTeXでも可)
 \usepackage[version=4]{mhchem} % 化学式
 \usepackage{siunitx} % 単位表記
 
+\usepackage{./preambles/biblatex-journal-style} % 削除または環境に応じて修正
 % biblatexはbiberバックエンドで問題なし
 \usepackage[
   backend=biber,
   style=numeric,
   sorting=none
 ]{biblatex}
-
-% 参考文献ファイルの読み込み
-\addbibresource{./references/reference_1.bib}
 
 % cleverefの設定：日本語ラベル対応
 \crefformat{chapter}{第#2#1#3章}
@@ -51,6 +44,7 @@
 \crefname{figure}{Fig.}{Fig.}
 \crefname{table}{Tab.}{Tab.}
 
+% 式や章，図番号を引用時の日本語の接続詞
 \newcommand{\crefpairconjunction}{と}
 \newcommand{\crefrangeconjunction}{から}
 \newcommand{\crefmiddleconjunction}{，}
@@ -61,4 +55,41 @@
 \numberwithin{equation}{section}
 \renewcommand{\thefigure}{\thechapter.\arabic{figure}}
 \renewcommand{\thetable}{\thechapter.\arabic{table}}
-\renewcommand{\lstlistingname}{プログラム}
+
+% 付録のソースコードの出力に関する設定
+\renewcommand{\lstlistingname}{プログラム} % ソースコードのキャプション名
+\lstset{
+  language = Python,
+  %背景色と透過度
+  backgroundcolor={\color[gray]{.90}},
+  %枠外に行った時の自動改行
+  breaklines = true,
+  %自動改行後のインデント量(デフォルトでは20[pt])
+  breakindent = 10pt,
+  %標準の書体
+  basicstyle = \ttfamily\scriptsize,
+  %コメントの書体
+  commentstyle = {\itshape \color[cmyk]{1,0.4,1,0}},
+  %関数名等の色の設定
+  classoffset = 0,
+  %キーワード(int, ifなど)の書体
+  keywordstyle = {\bfseries \color[cmyk]{0,1,0,0}},
+  %表示する文字の書体
+  stringstyle = {\ttfamily \color[rgb]{0,0,1}},
+  %枠 "t"は上に線を記載, "T"は上に二重線を記載
+  %他オプション：leftline，topline，bottomline，lines，single，shadowbox
+  frame = TBrl,
+  %frameまでの間隔(行番号とプログラムの間)
+  framesep = 5pt,
+  %行番号の位置
+  numbers = left,
+  %行番号の間隔
+  stepnumber = 1,
+  %行番号の書体
+  numberstyle = \tiny,
+  %タブの大きさ
+  tabsize = 4,
+  %キャプションの場所("tb"ならば上下両方に記載)
+  captionpos = t
+}
+
