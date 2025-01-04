@@ -5,24 +5,20 @@
 ## ファイル構成
 
 - **main.tex**：メインの$\LaTeX$ソースファイル．ドキュメント全体の構成を定義．
-- **lab_thesis.cls**：研究室用の論文クラスファイル．
+- **japanese_thesis.cls**：研究室用の日本語論文クラスファイル．
 - **biblatex.cfg**：参考文献の出力形式を制御するbiblatex用の設定ファイル．
 - **.vscode**：vscodeの設定ファイルをまとめたディレクトリ．
   - **settings.json**：`thesis_template`内で適応される$\LaTeX$のコンパイルレシピ等の設定を記述した設定ファイル．
   - **extensions.json**：本パッケージを実行する上でインストールを推奨するvscodeの拡張機能をまとめた設定ファイル．
 - **preambles**：プリアンブル設定をまとめたディレクトリ．
-  - **packages.tex**：パッケージやコマンドの定義が含まれるファイル．
-  - **macros.tex**：コマンド定義（自作マクロ）が含まれるファイル．
+  - **packages_lualatex.sty**：パッケージやコマンドの定義が含まれるスタイルファイル．
+  - **macros.sty**：コマンド定義（自作マクロ）が含まれるスタイルファイル．
   - **biblatex-journal-style.sty**：ADSのbibtexファイルの独自コマンドを使えるよう定義したスタイルファイル．
-  - **jlisting.sty**：付録のソースコード出力用スタイルファイル．
-  - **jtygm.sty**：フォントのWarning対策用スタイルファイル．
-  - **listings.sty**：付録のソースコード出力用スタイルファイル．
 - **documents/**：各章の内容を含むディレクトリ。任意の本文ファイルを含む．
 - **images/**：図表を保存するディレクトリ．
 - **references**：参考文献リストを含むディレクトリ．
   - **references_1.bib**
-- **source_codes**：付録のソースコードを出力する設定ファイルとソースコードを含むディレクトリ．
-  - **sourcecode_output_settings.tex**：ソースコードを付録に出力する際の設定ファイル．
+- **source_codes**：付録のソースコードを含むディレクトリ．
   - **source_code_1.py**：付録に出力するソースコードの元ファイル．
 
 ## 使い方
@@ -34,7 +30,7 @@
   - `amsmath`
   - `graphicx`
   - `hyperref`
-  - その他，`./preambles/packages.tex`に記載のパッケージ
+  - その他，`./preambles/packages.sty`に記載のパッケージ
 - vscodeをインストールしてください．
 
 ### 2. 実行方法
@@ -44,10 +40,13 @@
 - 本パッケージのダウンロード・解凍
 　- 本ディレクトリの親ディレクトリからzipファイルをダウンロードし，各々の適当なフォルダに本ディレクトリを解凍してください．
 - インストールしたvscodeを開く．
-- vscodeのワークスペースとして「フォルダを開く」で`latex_templates`内の`thesis_template`を指定．
+- vscodeのワークスペースとして「フォルダを開く」で`latex_templates`内の`thesis_template_lualatex`を指定．
 - 「おすすめの拡張機能」として表示される拡張機能をインストール
   - `.vscode/extensions.json`に記載の拡張機能が表示されます．
-- `main.tex`を開き`Ctrl+Alt+B`を押して実行してください．
+- `main.tex`の実行
+  - vscodeの左側に表示されている拡張機能のメニューのうち，`TEX`を選択．
+  - 一番上の`LaTeXプロジェクトビルド`を選択．
+  - `レシピ:lualatex`を選択して実行．
 
 ### 3. コンテンツの編集
 
@@ -55,7 +54,7 @@
   - `./documents/`ディレクトリ内の`.tex`ファイルを編集します．
   - 新しい章を追加する場合は，新しい`.tex`ファイルを作成し，`main.tex`で`\input{./documents/your_chapter}`を追加します．
 - **自作マクロの追加**：
-  - `./preambles/macros.tex`内に`\newcommand{}`を用いて論文中でよく用いるマクロを定義することができます．
+  - `./preambles/macros.sty`内に`\newcommand{}`を用いて論文中でよく用いるマクロを定義することができます．
 - **図の挿入**：
   - 画像ファイルを`./images/`ディレクトリに保存します．
   - 本文中で`\includegraphics{./images/your_image}`を使用して挿入します．
@@ -70,12 +69,17 @@
 
 ### 4. プリアンブルのカスタマイズ
 
-`./preambles/packages.tex`ファイルで，以下の設定を行えます．
+`./preambles/packages.sty`ファイルで，以下の設定を行えます．
 
 - **パッケージの追加**：必要なパッケージを`\usepackage{}`で追加します．
-- **数式番号の出力形式の変更**：`\numberwithin{equation}{section}`部分を変更することにより数式番号の出力形式を変更できます．
+- **数式番号の出力形式の変更**：`\numberwithin{equation}{chapter}`部分を変更することにより数式番号の出力形式を変更できます．
 - **図・表番号の出力形式の変更**：`\renewcommand{\thefigure}{\thechapter.\arabic{figure}}`部分を変更することにより図や表番号の出力形式を変更できます．
 - **cleverefの設定**：`crefname`等の設定を変更できます．
+
+### 5. その他
+- 本テンプレートは，従来の`siunitx`と`Physics`パッケージの競合を避けるため，`Physics2`パッケージを使用しています．
+- パッケージを追加する場合は，`./preambles/packages_lualatex.sty`に記載のパッケージとの競合に注意してください．
+- 付録やソースコードの`\cref{}`による参照は現在スタイルに問題があるため使用できません・付録を本文中で参照する場合，`\aref{}`コマンドを使用してください．また，同様に，ソースコードを本文中で参照する場合は`\lref{}`コマンドを使用してください．
 
 ## 注意事項
 
