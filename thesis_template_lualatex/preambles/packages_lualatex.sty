@@ -37,7 +37,7 @@
 \usepackage{cleveref}
 % \usepackage{autonum} % 必要なら使用可 (LuaLaTeXでも可)
 \usepackage[version=4]{mhchem} % 化学式
-% \usepackage{siunitx} % 単位表記\usepackage{bookmark}
+\usepackage{siunitx} % 単位表記\usepackage{bookmark}
 \usepackage{tikz-feynhand}
 
 \usepackage{./preambles/biblatex-journal-style} % 削除または環境に応じて修正
@@ -81,7 +81,9 @@
 \numberwithin{equation}{chapter}
 \renewcommand{\thefigure}{\thechapter.\arabic{figure}}
 \renewcommand{\thetable}{\thechapter.\arabic{table}}
-
+% 付録を参照する際のコマンド
+\newcommand{\aref}[1]{付録\ref{#1}}
+\newcommand{\lref}[1]{プログラム\ref{#1}}
 % 付録のソースコードの出力に関する設定
 \renewcommand{\lstlistingname}{プログラム} % ソースコードのキャプション名
 
