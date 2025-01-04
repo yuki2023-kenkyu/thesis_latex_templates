@@ -29,7 +29,6 @@
     openany,
     final,
     ja=standard,
-    % jafont=hiragino-pron,
     japaram={units}
 }
 \ProcessOptions\relax
