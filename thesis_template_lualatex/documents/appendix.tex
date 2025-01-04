@@ -1,0 +1,19 @@
+\appendix
+\appendixstyle
+\chapter{数値解析コード}\label{appendix:code1}
+ソースコード等を付録として示す場合は以下のようにしましょう．
+%ソースコードのPathはmain.tex側から見た時のPathを指定
+\lstinputlisting[caption = 使用した数値解析コード, label = lst:program2]{./source_codes/source_code_1.py}
+\section{その他の付録}
+付録における数式番号の出力スタイルのテストです．
+\begin{equation}\label{eq:test_1}
+    E=mc^2
+\end{equation}
+
+\cref{eq:test_1}は有名な式です(付録\ref{appendix:code1})．
+
+付録ソースコード参照用独自マクロのテストです．\lref{lst:program2}はPythonのコードです．
+
+付録参照用独自コマンドのテストです．\aref{appendix:code1}は数値解析コードです．
+
+\chapter{huhuu}
