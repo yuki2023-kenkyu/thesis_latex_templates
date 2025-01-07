@@ -1,7 +1,8 @@
 % LuaLaTeX + luatexja + bxjsreportを前提とした例
 \usepackage{luatexja}
-\usepackage[japanese,english]{babel} % 必要なら英語環境を有効化
-\usepackage{bxorigcapt}
+\usepackage{csquotes} % biblatexと併用する場合は不要
+% \usepackage[japanese,english]{babel} % 必要なら英語環境を有効化
+% \usepackage{bxorigcapt}
 % ドライバ非依存でgraphicx読み込み
 \usepackage{graphicx}
 \usepackage{bmpsize}
@@ -10,10 +11,8 @@
 \usepackage{amsmath, amssymb, amsthm, physics2}
 \usepackage{mathtools}
 \usepackage{booktabs}
-
 \usepackage{bookmark}
 \usepackage{xurl}
-% hyperrefはdvipdfmxオプションを外して使用
 \usepackage{hyperref}
 \hypersetup{% hyperrefオプションリスト
   unicode=true,
@@ -34,58 +33,28 @@
 ]{caption}
 \usepackage{breqn} % dmath環境などはLuaLaTeXでも利用可能
 \usepackage{listings, color}
-\usepackage{cleveref}
 % \usepackage{autonum} % 必要なら使用可 (LuaLaTeXでも可)
 \usepackage[version=4]{mhchem} % 化学式
 \usepackage{siunitx} % 単位表記\usepackage{bookmark}
 \usepackage{tikz-feynhand}
-
 \usepackage{./preambles/biblatex-journal-style} % 削除または環境に応じて修正
 % biblatexはbiberバックエンドで問題なし
-\usepackage{csquotes}
 \usepackage[
   backend=biber,
   style=numeric,
   sorting=none
 ]{biblatex}
+\usepackage{./preambles/zref-settings}
 
-\usephysicsmodule{ab}
-
-% cleverefの設定：日本語ラベル対応
-\creflabelformat{chapter}{第#2#1#3章}
-\creflabelformat{section}{#2#1#3節}
-\creflabelformat{subsection}{#2#1#3小節}
-\creflabelformat{subsubsection}{#2#1#3}
-\crefname{section}{第}{第}
-\crefname{subsection}{第}{第}
-
-\creflabelformat{enumi}{#2（#1）#3}
-\crefrangeformat{enumi}{#3（#1）#4--#5（#2）#6}
-\crefmultiformat{enumi}{#2（#1）#3}{，#2（#1）#3}{，#2（#1）#3}{，#2（#1）#3}
-\crefname{equation}{式}{式}
-\crefname{dmath}{式}{式}
-
-\crefname{figure}{Fig.}{Fig.}
-\crefname{table}{Tab.}{Tab.}
-
-\crefname{appendix}{付録}{付録}
-\crefname{lstlisting}{プログラム}{プログラム}
-
-% 式や章，図番号を引用時の日本語の接続詞
-\newcommand{\crefpairconjunction}{と}
-\newcommand{\crefrangeconjunction}{から}
-\newcommand{\crefmiddleconjunction}{，}
-\newcommand{\creflastconjunction}{，および}
+\usephysicsmodule{ab} % Physics2のブラケット表記を有効化
 
 % 日本語キャプション設定や数式番号などはそのまま利用可能
 \numberwithin{equation}{chapter}
 \renewcommand{\thefigure}{\thechapter.\arabic{figure}}
 \renewcommand{\thetable}{\thechapter.\arabic{table}}
-% 付録を参照する際のコマンド
-\newcommand{\aref}[1]{付録\ref{#1}}
-\newcommand{\lref}[1]{プログラム\ref{#1}}
+
 % 付録のソースコードの出力に関する設定
-\renewcommand{\lstlistingname}{プログラム} % ソースコードのキャプション名
+\renewcommand{\lstlistingname}{ソースコード} % ソースコードのキャプション名
 
 \lstset{
   language = Python,
