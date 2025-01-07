@@ -6,19 +6,21 @@
 
 - **main.tex**：メインの$\LaTeX$ソースファイル．ドキュメント全体の構成を定義．
 - **japanese_thesis.cls**：研究室用の日本語論文クラスファイル．
+- **bxjsreport_test.cls**：元のbxjsreportクラスファイル．
 - **biblatex.cfg**：参考文献の出力形式を制御するbiblatex用の設定ファイル．
-- **.vscode**：vscodeの設定ファイルをまとめたディレクトリ．
+- **.vscode/**：vscodeの設定ファイルをまとめたディレクトリ．
   - **settings.json**：`thesis_template`内で適応される$\LaTeX$のコンパイルレシピ等の設定を記述した設定ファイル．
   - **extensions.json**：本パッケージを実行する上でインストールを推奨するvscodeの拡張機能をまとめた設定ファイル．
-- **preambles**：プリアンブル設定をまとめたディレクトリ．
+- **preambles/**：プリアンブル設定をまとめたディレクトリ．
   - **packages_lualatex.sty**：パッケージやコマンドの定義が含まれるスタイルファイル．
   - **macros.sty**：コマンド定義（自作マクロ）が含まれるスタイルファイル．
   - **biblatex-journal-style.sty**：ADSのbibtexファイルの独自コマンドを使えるよう定義したスタイルファイル．
+  - **zref-settings.sty**：zref-cleverパッケージに関する設定用のスタイルファイル．
 - **documents/**：各章の内容を含むディレクトリ。任意の本文ファイルを含む．
 - **images/**：図表を保存するディレクトリ．
-- **references**：参考文献リストを含むディレクトリ．
+- **references/**：参考文献リストを含むディレクトリ．
   - **references_1.bib**
-- **source_codes**：付録のソースコードを含むディレクトリ．
+- **source_codes/**：付録のソースコードを含むディレクトリ．
   - **source_code_1.py**：付録に出力するソースコードの元ファイル．
 
 ## 使い方
@@ -30,7 +32,7 @@
   - `amsmath`
   - `graphicx`
   - `hyperref`
-  - その他，`./preambles/packages.sty`に記載のパッケージ
+  - その他，`./preambles/packages_lualatex.sty`に記載のパッケージ
 - vscodeをインストールしてください．
 
 ### 2. 実行方法
@@ -65,21 +67,20 @@
   - `./references/`ディレクトリの`reference_1.bib`にBibTeX形式で文献情報を追加します．
   - 本文中で`\cite{your_reference_key}`を使用して引用します．
   - 日本語文献の情報を挿入する場合，`reference_1.bib`に追加した文献情報フィールドの最後に`langid = {japanese}`を追記してください．また，authorフィールドは必ず`author = {姓, 名}`としてください．
-  - 新たに`.bib`ファイルを追加する際は`./references/`内に追加し，`./preambles/packages.tex`の`\addbibresource{./references/reference_1.bib}`のすぐ下に`\addbibresoiurce{./references/追加したファイルの名前.bib}`と追記してください．
+  - 新たに`.bib`ファイルを追加する際は`./references/`内に追加し，`./preambles/packages_lualatex.sty`の`\addbibresource{./references/reference_1.bib}`のすぐ下に`\addbibresoiurce{./references/追加したファイルの名前.bib}`と追記してください．
 
 ### 4. プリアンブルのカスタマイズ
 
-`./preambles/packages.sty`ファイルで，以下の設定を行えます．
+`./preambles/packages_lualatex.sty`ファイルで，以下の設定を行えます．
 
 - **パッケージの追加**：必要なパッケージを`\usepackage{}`で追加します．
 - **数式番号の出力形式の変更**：`\numberwithin{equation}{chapter}`部分を変更することにより数式番号の出力形式を変更できます．
 - **図・表番号の出力形式の変更**：`\renewcommand{\thefigure}{\thechapter.\arabic{figure}}`部分を変更することにより図や表番号の出力形式を変更できます．
-- **cleverefの設定**：`crefname`等の設定を変更できます．
 
 ### 5. その他
 - 本テンプレートは，従来の`siunitx`と`Physics`パッケージの競合を避けるため，`Physics2`パッケージを使用しています．
 - パッケージを追加する場合は，`./preambles/packages_lualatex.sty`に記載のパッケージとの競合に注意してください．
-- 付録やソースコードの`\cref{}`による参照は現在スタイルに問題があるため使用できません・付録を本文中で参照する場合，`\aref{}`コマンドを使用してください．また，同様に，ソースコードを本文中で参照する場合は`\lref{}`コマンドを使用してください．
+- `cleveref`パッケージに関するエラーが相次いだため，新たに`zref-clever`を導入し，従来使用していたコマンド`\cref{}`が使えなくなりました．数式などの相互参照を行う場合は，`\zcref{}`を利用してください．また，範囲指定しての参照の場合は`range`オプションを利用し，`\zcref[range]{label:a, label:b}`等としてください．
 
 ## 注意事項
 
