@@ -201,6 +201,11 @@
     "booktitle",
     "year"
   ],
+  "latex-workshop.intellisense.label.command": [
+    "label",
+    "linelabel",
+    "zlabel", // <-- これを追加
+  ],
   "latex-workshop.bibtex-format.tab": "2 spaces",
   "latex-workshop.bibtex-format.case": "lowercase",
   "latex-workshop.bibtex-format.surround": "Curly braces",
