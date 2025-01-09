@@ -286,8 +286,8 @@
   {0pt}
   {}
 
-\titlespacing{\section}{0pt}{0pt}{1\zw}
-\titlespacing{name=\section,numberless}{0pt}{0pt}{1\zw}
+\titlespacing{\section}{0pt}{1\zw}{1\zw}
+\titlespacing{name=\section,numberless}{0pt}{1\zw}{1\zw}
 
 %-----------------------------
 % subsection の見出し再定義
@@ -306,8 +306,8 @@
   {0pt}
   {}
 
-\titlespacing{\subsection}{0pt}{0pt}{1\zw}
-\titlespacing{name=\subsection,numberless}{0pt}{0pt}{1\zw}
+\titlespacing{\subsection}{0pt}{1\zw}{1\zw}
+\titlespacing{name=\subsection,numberless}{0pt}{1\zw}{1\zw}
 
 %-----------------------------
 % subsubsection の見出し再定義
@@ -319,8 +319,8 @@
   {0pt}
   {}
 
-\titlespacing{\subsubsection}{0pt}{0pt}{1\zw}
-\titlespacing{name=\subsubsection,numberless}{0pt}{0pt}{1\zw}
+\titlespacing{\subsubsection}{0pt}{1\zw}{1\zw}
+\titlespacing{name=\subsubsection,numberless}{0pt}{1\zw}{1\zw}
 
 %====================================================================
 % 14. 付録(\appendix)と謝辞(\thanks)の定義
