@@ -8,8 +8,11 @@
 \usepackage{bmpsize}
 \usepackage{here}
 \usepackage{comment}
+\usepackage{bm}
 \usepackage{amsmath, amssymb, amsthm, physics2}
+\usepackage{fixdif, derivative}
 \usepackage{mathtools}
+\usepackage{mathrsfs}
 \usepackage{booktabs}
 \usepackage{bookmark}
 \usepackage{xurl}
@@ -47,6 +50,9 @@
 \usepackage{./preambles/zref-settings}
 
 \usephysicsmodule{ab} % Physics2のブラケット表記を有効化
+\usephysicsmodule{ab.braket}    % braket記法を有効化
+\usephysicsmodule{diagmat} % Physics2の行列表記を有効化
+\usephysicsmodule[showleft=2,showtop=2]{xmat} % Physics2の行列表記を有効化
 
 % 日本語キャプション設定や数式番号などはそのまま利用可能
 \numberwithin{equation}{chapter}
