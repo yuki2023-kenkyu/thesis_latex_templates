@@ -8,3 +8,38 @@
 \newcommand{\Riemanntensor}[5]{
   \partial_{#3}\Gamma^{#1}_{#2 #4} - \partial_{#4}\Gamma^{#1}_{#2 #3} + \Gamma^{#1}_{#3 #5}\Gamma^{#5}_{#2 #4} - \Gamma^{#1}_{#4 #5}\Gamma^{#5}_{#2 #3}
 }
+
+% 積分値の評価
+\newcommand{\eval}[1]{\left.#1\right|}
+% Landau記号
+\newcommand{\order}[1]{\mathcal{O}\ab(#1)}
+%--- physicsパッケージの\vbコマンドを再現 --%
+\makeatletter
+\newcommand\vb{\@ifstar\boldsymbol\mathbf}
+\newcommand\va[1]{\@ifstar{\vec{#1}}{\vec{\mathrm{#1}}}}
+\newcommand\vu[1]{%
+\@ifstar{\hat{\boldsymbol{#1}}}{\hat{\mathbf{#1}}}}
+\makeatother
+%--- physicsパッケージの\vbコマンドを再現 END --%
+%--- 勾配・発散・回転 ---%
+% 勾配
+\DeclareMathOperator{\grad}{\nabla}
+% 発散
+% \divが「÷」と競合するため再定義
+\DeclareMathOperator{\divergence}{\nabla\cdot}
+\let\divisionsymbol\div 
+\renewcommand{\div}{\divergence} 
+% 回転
+\DeclareMathOperator{\rot}{\nabla\times}
+%--- 勾配・発散・回転 END ---%
+% 実部
+\renewcommand{\Re}{\operatorname{Re}}
+% 虚部
+\renewcommand{\Im}{\operatorname{Im}}
+% トレース
+\newcommand{\Tr}{\operatorname{Tr}}
+% rank
+\newcommand{\rank}{\operatorname{rank}}
+% \mqtyコマンド
+\newcommand{\mqty}[1]{\begin{matrix}#1\end{matrix}}
+
