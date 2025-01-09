@@ -53,24 +53,26 @@
         \end{verbatim}
 
     \section{便利なパッケージの紹介}
-        \subsection{physics}
+        \subsection{physics2}
         物理系の数式を簡略に記述できるパッケージです．たとえば，次のように記述が簡単になります．
 
             \begin{verbatim}
-            \dv{x}{t} % 通常の微分
-            \pdv{f}{x} % 偏微分
-            \abs{x} % 絶対値
+            \ab() % 括弧()の大きさ自動調整
             \end{verbatim}
 
-        \subsection{cleveref}
-        `cleveref` パッケージは，参照コマンド（`ref{}`）を強化し，ラベルの種類（図，表，方程式など）に応じた適切な表現を自動的に行います．
+        ただし，従来のPhysicsパッケージとは異なり，\verb|\qty{}|コマンドを始めとしたコマンドが使えないため，他の数学パッケージの機能を複数組み合わせて書く必要があります．
+
+        また，Physics2パッケージにおいて括弧の大きさの自動調整機能を利用するには，\verb|\usephysicsmodule{ab}|をプレアンブルに追加する必要があります．
+
+        \subsection{zref-clever}
+        zref-clever パッケージは，参照コマンド（\verb|ref{}|）を強化し，ラベルの種類（図，表，方程式，ソースコード，章など）に応じた適切な表現を自動的に行います．
 
             \begin{verbatim}
-            \cref{fig:example} % 出力: Fig.1
+            \zcref{fig:example} % 出力: Fig.1
             \end{verbatim}
 
     \section{数式入力の方法}
-        数式はインラインモード（`$...$`）またはディスプレイモード（`$$...$$` または `\begin{equation}...\end{equation}`）で記述します．
+        数式はインラインモード（\verb|$...$|）またはディスプレイモード（\verb|$$...$$| または \verb|\begin{equation}...\end{equation}|）で記述します．
 
         \subsection{インライン数式}
             \begin{verbatim}
