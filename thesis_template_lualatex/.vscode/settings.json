@@ -43,7 +43,7 @@
         "platex",
         "platex",
         "dvipdfmx",
-        "move",
+        // "move",
         "delete"
       ]
     },
@@ -55,7 +55,7 @@
         "Biber",
         "lualatex",
         "lualatex",
-        "move",
+        // "move",
         "delete"
       ]
     }
