@@ -12,7 +12,7 @@
 \usepackage{amsmath, amssymb, amsthm, physics2}
 \usepackage{fixdif, derivative}
 \usepackage{mathtools}
-\usepackage{mathrsfs}
+\usepackage{mathrsfs} % 花文字
 \usepackage{booktabs}
 \usepackage{bookmark}
 \usepackage{xurl}
@@ -44,7 +44,8 @@
 % biblatexはbiberバックエンドで問題なし
 \usepackage[
   backend=biber,
-  style=numeric,
+  style=phys,
+  biblabel=brackets,
   sorting=none
 ]{biblatex}
 \usepackage{./preambles/zref-settings}
