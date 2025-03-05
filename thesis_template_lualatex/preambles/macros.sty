@@ -1,3 +1,8 @@
+% ローマ数字表示用のマクロ
+\newcounter{num}
+\newcommand{\ajRoman}[1]{\setcounter{num}{#1} \Roman{num}}
+\newcommand{\ajroman}[1]{\setcounter{num}{#1} \roman{num}}
+
 % 図の挿入用マクロ
 \newcommand{\figimage}[4]{\begin{figure}[phtb]\centering\includegraphics[keepaspectratio, scale = #4]{#1}\caption{#2}\label{#3}\end{figure}}
 % Christoffel記号
@@ -42,4 +47,19 @@
 \newcommand{\rank}{\operatorname{rank}}
 % \mqtyコマンド
 \newcommand{\mqty}[1]{\begin{matrix}#1\end{matrix}}
+
+% ラグランジアン・ハミルトニアン
+% https://qiita.com/Yarakashi_Kikohshi/items/ff3ea22b43ae604aef6b#-%E3%83%A9%E3%82%B0%E3%83%A9%E3%83%B3%E3%82%B8%E3%82%A2%E3%83%B3%E3%81%A8%E3%81%8B
+\newcommand{\lagr}{% Lagrangian
+    \marhcal{L}    %
+}
+\newcommand{\lagrd}{% Lagrangian density
+    \mathscr{L}    % need "mathrsfs" package
+}
+\newcommand{\hamil}{% Hamiltonian
+    \mathcal{H}    %
+}
+\newcommand{\hamild}{% Hamiltonian density
+    \mathscr{H}    % need "mathrsfs" package
+}
 
