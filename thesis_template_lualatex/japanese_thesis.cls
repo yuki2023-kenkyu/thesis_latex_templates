@@ -177,7 +177,7 @@
 \renewcommand{\bibname}{参考文献}
 \renewcommand{\indexname}{索 引}
 \renewcommand{\figurename}{Fig.}
-\renewcommand{\tablename}{Table.}
+\renewcommand{\tablename}{Table}
 
 %====================================================================
 % 9. ページスタイルや段落設定のカスタマイズ

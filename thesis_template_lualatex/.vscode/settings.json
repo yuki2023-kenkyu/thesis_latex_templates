@@ -2,7 +2,8 @@
   "[latex]": {
     "editor.wordWrap": "on",
     // 日本語の単語区切りを設定
-    "editor.wordSeparators": "./\\()\"'-:,.;<>~!@#$%^&*|+=[]{}`~?。．、，（）「」『』［］｛｝《》てにをはがのともへでや ",
+    "editor.wordSeparators": "./\\()\"'-:,.;<>~!@#$%^&*|+=[]{}`~?゠・，、；：！？．。‘’“”（）｟｠［］〚〛〔〕｛｝〈〉《》「」『』【】〖〗〝〟がてでとにのはへもやを",
+    //                                                          ↑ “?” までがデフォルトの構成  
     "editor.tabSize": 4,
     "editor.insertSpaces": true,
     "editor.detectIndentation": false,
@@ -14,10 +15,34 @@
       "strings": false
     },
     "editor.bracketPairColorization.enabled": true,
+    "editor.language.colorizedBracketPairs": [
+      // ["‘", "’"],
+      // ["“", "”"],
+      // ["(", ")"],
+      // ["（", "）"],
+      // ["｟", "｠"],
+      // ["[", "]"],
+      // ["［", "］"],
+      // ["〚", "〛"],
+      // ["〔", "〕"],
+      // ["{", "}"],
+      // ["｛", "｝"],
+      // ["〈", "〉"],
+      // ["《", "》"],
+      // ["「", "」"],
+      // ["『", "』"],
+      // ["【", "】"],
+      // ["〖", "〗"],
+      // ["〝", "〟"],
+      // ["`", "'"],
+      // ["``", "\""]
+    ],
     "editor.unicodeHighlight.invisibleCharacters": true,
     "editor.unicodeHighlight.allowedCharacters": {
       "，": true,
       "．": true,
+      ",": true,
+      ".": true,
       "！": true,
       "？": true,
       "［": true,
