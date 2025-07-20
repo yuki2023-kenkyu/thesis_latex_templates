@@ -2,13 +2,14 @@
 \documentclass[12pt,a4paper]{jsarticle}
 
 %%%%%%%%% packages %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\usepackage{graphicx} % Include figure files
+\usepackage[dvipdfmx]{graphicx} % Include figure files
 \usepackage[%                           % 余白の設定
 % mag=1400,%                              jarticle の場合（14ptに）
 dvipdfm,truedimen,%
 top=30truemm,bottom=20truemm,%
 left=20truemm,right=20truemm]{geometry}
 \usepackage{enumitem}
+\usepackage{xurl}
 \usepackage{amsmath,amssymb} % 数式環境
 \usepackage{bm} % bold math
 \usepackage[
@@ -46,6 +47,13 @@ left=20truemm,right=20truemm]{geometry}
     \item[新規性] これまでの研究と何が違うのかを文章でまとめる．
     \item[期待される効果] この研究によってもたらされる効果に関して文章でまとめる（研究の意義）
 \end{description}
+図の例
+\begin{figure}[htbp]
+    \centering
+    \label{fig:research_goal}
+    \includegraphics[width=0.5\linewidth]{./fig_1.png}
+    \caption[転載元サイト]{\url{https://www.nta.co.jp/media/tripa/articles/gHvD8}より転載}
+\end{figure}
 
 \section{理論（手法）の概要}
 \begin{enumerate}[leftmargin=*]
