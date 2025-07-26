@@ -1,0 +1,33 @@
+\documentclass{japanese_thesis}
+\usepackage{./preambles/packages_lualatex}
+\usepackage{./preambles/macros}
+\addbibresource{./references/reference_1.bib}
+
+\title{サンプル文書}
+\author{あなたの名前}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+これはサンプル文書です。文献を参照します。
+\ajRoman{1}a型超新星
+
+作用は、
+\begin{eqnarray}\label{eq:EH_action}
+    S=\int d^4x\sqrt{-g}\left[\frac{1}{2\kappa}R+\lagrd _M \right]
+\end{eqnarray}
+で与えられる。計量の逆数の変分$\delta{g^{\mu\nu}}$を計算すると、
+\begin{eqnarray}
+    \delta{S}&=&\int d^4x \delta{g^{\mu\nu}}\left[\frac{1}{2\kappa}\fdv{(\sqrt{-g}R)}{g^{\mu\nu}}+\fdv{(\sqrt{-g}\lagrd_M)}{g^{\mu\nu}} \right]\\
+    &=&\int d^4x \delta{g^{\mu\nu}}\left[\frac{1}{2\kappa}\left(\fdv{R}{g^{\mu\nu}}+\frac{R}{\sqrt{-g}}\fdv{\sqrt{-g}}{g^{\mu\nu}}\right)+\frac{1}{\sqrt{-g}}\fdv{(\sqrt{-g}\lagrd_M)}{g^{\mu\nu}} \right]\label{eq:EH_var}
+\end{eqnarray}
+
+\begin{eqnarray}
+    \odv{}{t}\left(\pdv{L}{\dot{q}_i}\right)-\pdv{L}{q_i}=0
+\end{eqnarray}
+
+\nocite{*}
+\printbibliography[title=参考文献]
+
+\end{document}

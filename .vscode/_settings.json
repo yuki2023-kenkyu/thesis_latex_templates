@@ -1,0 +1,240 @@
+// これはmacos用に作成されたものです。macosを使用されている方は、Windows版とはファイルコピーや消去のコマンドが異なるため、本ファイルの名前を「settings.json」に変更し、Windows版のファイル名の前にアンダースコアを追加してください。
+{
+  "[latex]": {
+    "editor.wordWrap": "on",
+    // 日本語の単語区切りを設定
+    // 日本語の単語区切りを設定
+    "editor.wordSeparators": "./\\()\"'-:,.;<>~!@#$%^&*|+=[]{}`~?゠・，、；：！？．。‘’“”（）｟｠［］〚〛〔〕｛｝〈〉《》「」『』【】〖〗〝〟がてでとにのはへもやを",
+    "editor.tabSize": 4,
+    "editor.insertSpaces": true,
+    "editor.detectIndentation": false,
+    "editor.suggestSelection": "recentlyUsedByPrefix",
+    "editor.suggest.snippetsPreventQuickSuggestions": false,
+    "editor.quickSuggestions": {
+      "other": true,
+      "comments": false,
+      "strings": false
+    },
+    "editor.bracketPairColorization.enabled": true,
+    "editor.unicodeHighlight.invisibleCharacters": true,
+    "editor.unicodeHighlight.allowedCharacters": {
+      "，": true,
+      "．": true,
+      "！": true,
+      "？": true,
+      "［": true,
+      "］": true,
+      "｛": true,
+      "｝": true,
+      "＜": true,
+      "＞": true
+    },
+    "editor.stickyScroll.enabled": true,
+    "files.trimTrailingWhitespace": true
+  },
+  // https://qiita.com/fuku_uma/items/e5ad46125a9612320273
+  // https://everykalax.hateblo.jp/entry/2022/12/15/144238#%E4%BB%98%E9%8C%B2-BibLaTeX%E3%82%92%E4%BD%BF%E3%81%88%E3%82%8B%E3%82%88%E3%81%86%E3%81%AB%E3%81%99%E3%82%8B
+  // LaTeX Workshop ではビルド設定を「Tool」と「Recipe」という2つで考える
+  "latex-workshop.latex.recipes": [
+    {
+      // 論文用レシピ (pLaTeX + dvipdfmx)
+      "name": "platex",
+      "tools": [
+        "platex",
+        "Biber",
+        "platex",
+        "platex",
+        "dvipdfmx",
+        // "move",
+        "delete"
+      ]
+    },
+    {
+      // LuaLaTeX用の新しいレシピ
+      "name": "lualatex",
+      "tools": [
+        "lualatex",
+        "Biber",
+        "lualatex",
+        "lualatex",
+        // "move",
+        "delete"
+      ]
+    }
+  ],
+  "latex-workshop.latex.tools": [
+    {
+      "name": "platex",
+      "command": "platex",
+      "args": [
+        "-synctex=1",
+        "-interaction=nonstopmode",
+        "-file-line-error",
+        "-kanji=utf8",
+        "-shell-escape",
+        "%DOCFILE%.tex"
+      ]
+    },
+    {
+      "name": "dvipdfmx",
+      "command": "dvipdfmx",
+      "args": [
+        "%DOCFILE%.dvi"
+      ]
+    },
+    {
+      "name": "Biber",
+      "command": "biber",
+      "args": [
+        "%DOCFILE%",
+        "--output-directory=%OUTDIR%",
+        "--bblencoding=utf8",
+        "-u",
+        "-U",
+        "--output_safechars"
+      ]
+    },
+    {
+      "name": "move",
+      "command": "cp",
+      "args": [
+        "%DOCFILE%.pdf",
+        "out"
+      ]
+    },
+    {
+      "name": "delete",
+      "command": "rm",
+      "args": [
+        "-f",
+        "out",
+        "%DOCFILE%.aux",
+        "%DOCFILE%.bbl",
+        "%DOCFILE%.bcf",
+        "%DOCFILE%.blg",
+        "%DOCFILE%.dvi",
+        "%DOCFILE%.idx",
+        "%DOCFILE%.ilg",
+        "%DOCFILE%.ind",
+        "%DOCFILE%.lof",
+        "%DOCFILE%.log",
+        "%DOCFILE%.lot",
+        "%DOCFILE%.out",
+        "%DOCFILE%.run.xml",
+        "%DOCFILE%.toc",
+        "%DOCFILE%.synctex.gz"
+      ]
+    },
+    {
+      // ここにlualatexツールを追加
+      "name": "lualatex",
+      "command": "lualatex",
+      "args": [
+        "-synctex=1",
+        "-interaction=nonstopmode",
+        "-file-line-error",
+        "-shell-escape",
+        "%DOCFILE%.tex"
+      ]
+    }
+  ],
+  "latex-workshop.latex.magic.args": [
+    "-f",
+    "-gg",
+    "-pv",
+    "-synctex=1",
+    "-interaction=nonstopmode",
+    "-file-line-error",
+    "%DOC%"
+  ],
+  "latex-workshop.latex.clean.fileTypes": [
+    "*.aux",
+    "*.bbl",
+    "*.bcf",
+    "*.blg",
+    "*.idx",
+    "*.ind",
+    "*.lof",
+    "*.lot",
+    "*.out",
+    "*.toc",
+    "*.acn",
+    "*.acr",
+    "*.alg",
+    "*.glg",
+    "*.glo",
+    "*.gls",
+    "*.ist",
+    "*.fls",
+    "*.log",
+    "*.out",
+    "out",
+    "*.fdb_latexmk",
+    "*.run.xml",
+    "*.synctex.gz",
+    "_minted*",
+    "*.nav",
+    "*.snm",
+    "*.vrb"
+  ],
+  "latex-workshop.latex.autoClean.run": "onBuilt",
+  "latex-workshop.view.pdf.viewer": "tab",
+  "latex-workshop.latex.autoBuild.run": "onSave",
+  "[tex]": {
+    "editor.suggest.snippetsPreventQuickSuggestions": false,
+    "editor.tabSize": 2
+  },
+  //https://qiita.com/Yarakashi_Kikohshi/items/8f720643543ba175f7cc
+  "[bibtex]": {
+    "editor.wordWrap": "off",
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true,
+    "files.trimTrailingWhitespace": true
+  },
+  "latex-workshop.intellisense.citation.maxfilesizeMB": 5,
+  "latex-workshop.intellisense.citation.backend": "biblatex",
+  "latex-workshop.intellisense.citation.label": "title",
+  "latex-workshop.intellisense.citation.type": "inline",
+  "latex-workshop.intellisense.citation.format": [
+    "author",
+    "title",
+    "journal",
+    "publisher",
+    "booktitle",
+    "year"
+  ],
+  "latex-workshop.intellisense.label.command": [
+    "label",
+    "linelabel",
+    "zlabel", // <-- これを追加
+  ],
+  "latex-workshop.bibtex-format.tab": "2 spaces",
+  "latex-workshop.bibtex-format.case": "lowercase",
+  "latex-workshop.bibtex-format.surround": "Curly braces",
+  "latex-workshop.bibtex-format.trailingComma": true,
+  "latex-workshop.bibtex-format.handleDuplicates": "Comment Duplicates",
+  "latex-workshop.bibtex-format.align-equal.enabled": true,
+  "latex-workshop.bibtex-fields.sort.enabled": true,
+  "latex-workshop.bibtex-fields.order": [
+    "title",
+    "author",
+    "editor",
+    "year",
+    "journal",
+    "publisher",
+    "school",
+    "institution"
+  ],
+  "latex-workshop.bibtex-format.sort.enabled": true,
+  "latex-workshop.bibtex-format.sortby": [
+    "key"
+  ],
+  "latex-workshop.intellisense.package.enabled": true,
+  "editor.unicodeHighlight.allowedCharacters": {
+    "，": true,
+    "．": true
+  },
+  "latex-workshop.latex.recipe.default": "lastUsed",
+  "latex-workshop.synctex.afterBuild.enabled": true,
+  "latex-workshop.bibtex.engine": "biber"
+}

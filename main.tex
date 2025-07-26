@@ -1,0 +1,29 @@
+\documentclass[luatex,base=12pt]{japanese_thesis}
+\usepackage{./preambles/packages_lualatex}
+\usepackage{./preambles/macros}
+% 参考文献ファイルの読み込み
+\addbibresource{./references/reference_1.bib}
+
+% 表紙の出力情報の設定
+% \SetMasterThesis % 修士論文の場合コメントを外す
+% \SetDoctoralThesis % 博士論文の場合コメントを外す
+\Title{チュートリアル} % タイトル
+\StudentNumber{123456789} % 学籍番号
+\Author{物理　\ 太郎} % 著者名
+\Professor{物理　\ 花子} % 指導教員名
+\DateofSubmission{6} % 年度
+
+\begin{document}
+    \Maketitle % 表紙の出力
+    \tableofcontents % 目次の出力
+    \mainmatter
+    \input{./documents/introduction}
+    \input{./documents/main_contents_1}
+    \input{./documents/main_contents_2}
+    \input{./documents/main_contents_3}
+    \input{./documents/main_contents_4}
+    \input{./documents/conclusion}
+    \input{./documents/appendix}
+    \input{./documents/thanks}
+    \printbibliography[title=参考文献]
+\end{document}

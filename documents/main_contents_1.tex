@@ -1,0 +1,169 @@
+\chapter{\LaTeX の基本的な使い方}
+
+    \section{\LaTeX 文書の構造}
+    \LaTeX ドキュメントは，以下のような構造で記述します．
+        \begin{verbatim}
+            \documentclass{jbook}
+            \usepackage{amsmath, amssymb}
+            \usepackage{graphicx}
+            \usepackage{geometry}
+            \usepackage{biblatex}
+            \usepackage{physics}
+            \usepackage{hyperref}
+            \usepackage{cleveref}
+            \addbibresource{reference.bib}
+            % 自作マクロの定義
+            \newcommand{\Planck}{h}
+            \newcommand{\myfrac}[2]{\frac{#1}{#2}}
+            \newcommand{\veca}[1]{\vec{#1}}
+            \newcommand{\diff}[2]{\frac{d#1}{d#2}}
+            \newcommand{\cLight}{\ensuremath{c}}
+            \newcommand{\simplefrac}[2][1]{\frac{#2}{#1}}
+
+            % 新しい数学演算子の定義
+            \DeclareMathOperator{\tr}{tr}
+
+            \begin{document}
+                \title{卒業論文のタイトル}
+                \author{氏名}
+                \date{提出日}
+
+                \maketitle
+
+                \tableofcontents
+
+                \chapter{序論}
+                ここに序論を書く．
+
+                \chapter{理論背景}
+                ここに理論背景を書く．
+
+                \chapter{実験方法}
+                ここに実験方法を書く．
+
+                \chapter{結果と考察}
+                ここに結果と考察を書く．
+
+                \chapter{結論}
+                ここに結論を書く．
+
+                \printbibliography
+
+            \end{document}
+        \end{verbatim}
+
+    \section{便利なパッケージの紹介}
+        \subsection{physics2}
+        物理系の数式を簡略に記述できるパッケージです．たとえば，次のように記述が簡単になります．
+
+            \begin{verbatim}
+            \ab() % 括弧()の大きさ自動調整
+            \end{verbatim}
+
+        ただし，従来のPhysicsパッケージとは異なり，\verb|\qty{}|コマンドを始めとしたコマンドが使えないため，他の数学パッケージの機能を複数組み合わせて書く必要があります．
+
+        また，Physics2パッケージにおいて括弧の大きさの自動調整機能を利用するには，\verb|\usephysicsmodule{ab}|をプレアンブルに追加する必要があります．
+
+        \subsection{zref-clever}
+        zref-clever パッケージは，参照コマンド（\verb|ref{}|）を強化し，ラベルの種類（図，表，方程式，ソースコード，章など）に応じた適切な表現を自動的に行います．
+
+            \begin{verbatim}
+            \zcref{fig:example} % 出力: Fig.1
+            \end{verbatim}
+
+    \section{数式入力の方法}
+        数式はインラインモード（\verb|$...$|）またはディスプレイモード（\verb|$$...$$| または \verb|\begin{equation}...\end{equation}|）で記述します．
+
+        \subsection{インライン数式}
+            \begin{verbatim}
+                インライン数式: $E = mc^2$
+            \end{verbatim}
+
+        \subsection{ディスプレイ数式}
+            \begin{verbatim}
+                \begin{equation}
+                    E = mc^2
+                \end{equation}
+            \end{verbatim}
+
+    \section{図や表の挿入方法}
+        \subsection{図の挿入}
+        以下のコードで図を挿入できます．
+            \begin{verbatim}
+                \begin{figure}[h]
+                    \centering
+                    \includegraphics[width=0.8\textwidth]{figure.png}
+                    \caption{サンプル図}
+                    \label{fig:example}
+                \end{figure}
+            \end{verbatim}
+
+        \subsection{表の挿入}
+        以下のコードで表を挿入します．
+            \begin{verbatim}
+                \begin{table}[h]
+                    \centering
+                    \begin{tabular}{|c|c|c|}
+                    \hline
+                    列1 & 列2 & 列3 \\
+                    \hline
+                    データ1 & データ2 & データ3 \\
+                    \hline
+                    \end{tabular}
+                    \caption{サンプル表}
+                    \label{tab:example}
+                \end{table}
+            \end{verbatim}
+
+    \section{参考文献の管理（biblatex）}
+        \subsection{文献ファイルの準備}
+        .bibファイルに文献データを記述します．
+        文献情報は，例えば次のように記述します．
+        \begin{verbatim}
+            @article{Einstein1905,%引用するときのラベル
+                author = {Einstein, Albert},
+                title = {Zur Elektrodynamik bewegter K{\"o}rper},
+                journal = {Annalen der Physik},
+                volume = {322},
+                number = {10},
+                pages = {891--921},
+                year = {1905},
+                publisher = {Wiley Online Library},
+                doi = {10.1002/andp.19053221004}
+            }
+        \end{verbatim}
+
+        \subsection{論文の引用方法}
+        次のコマンドを用いて論文を文中で引用します．
+            \begin{verbatim}
+                \cite{引用したい論文のラベル} %論文の引用
+            \end{verbatim}
+
+        \subsection{参考文献リストの表示}
+        次のコマンドを用いて参考文献リストを表示します．
+            \begin{verbatim}
+                \printbibliography %参考文献リストの表示
+            \end{verbatim}
+
+    \section{マクロ定義方法}
+        \subsection{基本的なマクロの定義}
+            \begin{verbatim}
+                \newcommand{\Planck}{h}
+                \newcommand{\myfrac}[2]{\frac{#1}{#2}}
+                \newcommand{\veca}[1]{\vec{#1}}
+                \newcommand{\diff}[2]{\frac{d#1}{d#2}}
+                \newcommand{\cLight}{\ensuremath{c}}
+                \newcommand{\simplefrac}[2][1]{\frac{#2}{#1}}
+            \end{verbatim}
+
+        \subsection{オプション引数の設定}
+            \begin{verbatim}
+                \newcommand{\simplefrac}[2][1]{\frac{#2}{#1}}
+            \end{verbatim}
+
+        \subsection{既存コマンドの再定義と数学演算子の定義}
+            \begin{verbatim}
+                \renewcommand{\vec}[1]{\mathbf{#1}}
+                \DeclareMathOperator{\tr}{tr}
+            \end{verbatim}
+
