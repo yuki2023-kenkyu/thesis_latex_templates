@@ -3,5 +3,6 @@
         "ms-ceintl.vscode-language-pack-ja",
         "james-yu.latex-workshop",
         "ionutvmi.path-autocomplete",
+        "eamodio.gitlens"
     ]
 }
