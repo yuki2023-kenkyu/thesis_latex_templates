@@ -37,19 +37,6 @@
   // LaTeX Workshop ではビルド設定を「Tool」と「Recipe」という2つで考える
   "latex-workshop.latex.recipes": [
     {
-      // 論文用レシピ (pLaTeX + dvipdfmx)
-      "name": "platex",
-      "tools": [
-        "platex",
-        "Biber",
-        "platex",
-        "platex",
-        "dvipdfmx",
-        // "move",
-        "delete"
-      ]
-    },
-    {
       // LuaLaTeX用の新しいレシピ
       "name": "lualatex",
       "tools": [
