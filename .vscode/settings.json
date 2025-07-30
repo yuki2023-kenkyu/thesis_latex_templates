@@ -260,5 +260,4 @@
   "latex-workshop.latex.recipe.default": "lastUsed",
   "latex-workshop.synctex.afterBuild.enabled": true,
   "latex-workshop.bibtex.engine": "biber",
-  "gitlens.experimental.generateCommitMessagePrompt": "Semantic Commit MessageおよびCommit Message Guidelineに従い、日本語のコミットメッセージを1行で作成してください。"
 }
