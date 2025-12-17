@@ -94,4 +94,4 @@
 
 ## 問い合わせ
 
-質問や提案がありましたら，リポジトリの[Issueセクション](https://github.com/yuki2023-kenkyu/latex_templates/issues)までご連絡ください．
+質問や提案がありましたら，リポジトリの[Issueセクション](https://github.com/yuki2023-kenkyu/thesis_latex_templates/issues)までご連絡ください．

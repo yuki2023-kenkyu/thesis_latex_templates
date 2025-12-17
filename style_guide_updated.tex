@@ -1,0 +1,271 @@
+\documentclass[luatex,base=12pt]{japanese_thesis}
+\usepackage{./preambles/packages_lualatex}
+\usepackage{./preambles/macros}
+\usepackage{booktabs}
+\providecommand{\zcref}[2][]{\ref{#2}}
+\providecommand{\zcite}[1]{\cite{#1}} % if you define such a macro in your thesis
+\providecommand{\num}[1]{#1}
+\providecommand{\unit}[1]{\mathrm{#1}}
+\providecommand{\qty}[2]{#1\,\mathrm{#2}}
+
+% 参考文献ファイルの読み込み
+\addbibresource{./references/reference_1.bib}
+% 表紙の出力情報の設定
+% \SetMasterThesis % 修士論文の場合コメントを外す
+\SetDoctoralThesis % 博士論文の場合コメントを外す
+\Title{チュートリアル} % タイトル
+\StudentNumber{123456789} % 学籍番号
+\Author{物理　\ 太郎} % 著者名
+\Professor{物理　\ 花子} % 指導教員名
+\DateofSubmission{6} % 年度
+
+\begin{document}
+\Maketitle
+\tableofcontents
+\mainmatter
+
+\chapter{本ドキュメントの目的と適用範囲}
+本 Style Guide は，\texttt{thesis\_latex\_templates}（\texttt{japanese\_thesis.cls}）を用いて卒業論文・修士論文を執筆する際に，
+文書全体の体裁・表記・数式・図表・参考文献・付録などの運用ルールを統一することを目的とする．
+
+\chapter{推奨ビルド環境}
+\begin{itemize}
+  \item コンパイル：LuaLaTeX（テンプレート既定）
+  \item 参考文献：BibLaTeX + Biber を推奨（テンプレート設定に従う）
+\end{itemize}
+
+\chapter{文章表記の基本ルール}
+\section{句読点・文体・段落}
+\begin{itemize}
+  \item 句読点は全角コンマと全角ピリオド（「，．」）に統一する．
+  \item 文体は常体（だ・である調）に統一する．
+  \item 段落の字下げは，インデント命令ではなく「改行」により管理する（テンプレートの既定に従う）．
+\end{itemize}
+
+\section{見出しの付け方}
+\begin{itemize}
+  \item 「目的」「背景」「実験」「結果」など単語だけの章・節名は避け，章の内容が一目で分かる具体的なタイトルにする．
+  \item 目次だけを見て論文の流れが追えるように章立てを設計する．
+  \item 章数は概ね 5～8 章を目安とする（研究分野・規定に応じて調整）．
+  \item 各章の冒頭に，当該章の要約（章で何を行い，何が得られるか）を置く．
+\end{itemize}
+
+\chapter{論文構成の推奨（卒論・修論 共通）}
+\begin{enumerate}
+  \item 序論：研究背景・先行研究での位置づけ・目的・方法（全体像）を明確に述べる．
+  \item 本論：理論／方法／実験・解析／結果／考察を，読者が再現できる粒度で記述する．
+  \item 結論：目的に対して何を行い，何が得られ，何が残課題かを整理する．
+  \item 謝辞：結論と参考文献の間に置く（指導教員・査読者・データ提供者など）．
+  \item 参考文献：本文で引用したもののみを収録し，番号対応を一致させる．
+  \item 付録：補足導出，追加図表，使用コード等（必要に応じて）．
+\end{enumerate}
+
+\chapter{数式（Notation と組版）}
+\section{原則}
+\begin{itemize}
+  \item 記号は一貫性を最優先し，定義した記号は最後まで同じ意味で使う．
+  \item ベクトルは太字にする（例：$\vect{x}$）．
+  \item \textbf{単位・数値は \texttt{siunitx} を用いて表記を統一する}（例：\verb|\qty{70}{\kilogram\meter\per\second}|）．
+  \item \textbf{相互参照は \texttt{zref-clever} の  を用いて統一する}（式・図・表・節などを同一の作法で参照する）．
+  \item \textbf{長い数式は \texttt{dmath} 環境（breqn）を優先する}（自動改行と番号付けの一貫性）．
+  \item 括弧サイズの自動調整は \textbf{\texttt{physics2} を優先}し，\verb|\ab( ... )|（必要に応じて \verb|\pab|, \verb|\Bab| など）を用いる．
+  \item 表示数式も文章の一部として句読点を付ける（必要なら数式末尾に「，」「．」を置く）．
+\end{itemize}
+
+\section{例：文章内参照（\texttt{\textbackslash zcref}）}
+次の\zcref{eq:example}は例である．
+\begin{equation}
+  E = \frac{1}{2} m v^2 \, .
+  \label{eq:example}
+\end{equation}
+
+\section{相互参照（zref-clever / \texttt{\textbackslash zcref}）}
+本テンプレートでは，本文中で番号を参照する場合は \verb|\zcref| を用いる．
+\begin{itemize}
+  \item \verb|\zcref{eq:...}|：式参照（例：\verb|\zcref{eq:einstein}|）
+  \item \verb|\zcref{fig:...}|：図参照（例：\verb|\zcref{fig:hz}|）
+  \item \verb|\zcref{tab:...}|：表参照（例：\verb|\zcref{tab:data}|）
+  \item \verb|\zcref{sec:...}|：節参照（例：\verb|\zcref{sec:method}|）
+\end{itemize}
+
+\noindent
+\textbf{命名規則}：ラベルは \verb|eq:|, \verb|fig:|, \verb|tab:|, \verb|sec:| などの接頭辞を付け，参照対象の種別が一目で分かるようにする．
+
+\medskip
+\noindent
+\textbf{文頭の参照}：文頭で参照を置く場合は，必要に応じて \verb|\zcref[S]{...}|（先頭大文字化等のローカルオプション）を用いる．
+
+\medskip
+\noindent
+\textbf{複数参照・範囲圧縮}：\verb|\zcref{eq:a,eq:b,eq:c}| のように複数ラベルを並べると，自動で整形（並べ替え・範囲圧縮）される設定を推奨する．
+
+\section{長い数式（breqn / dmath）}
+長い式（右端にはみ出す式）を無理に \texttt{align} や手動改行で処理すると，括弧や番号付けの一貫性が崩れやすい．
+本テンプレートでは \texttt{breqn} の \texttt{dmath} 環境を用いる（推奨）．
+
+\begin{verbatim}
+\begin{dmath}
+  S = \int d^4x \sqrt{-g}\,
+      \qty[ \frac12 (M_{\mathrm{Pl}}^2-\alpha\varphi^2)R
+          + \frac12 A R^2
+          - \frac12 g^{\mu\nu}\partial_\mu\varphi\partial_\nu\varphi
+          - V(\varphi) ] .
+  \label{eq:action}
+\end{dmath}
+
+本文では \zcref{eq:action} のように参照する．
+\end{verbatim}
+
+\noindent
+\textbf{注意}：\texttt{dmath} の有無や設定（\verb|\breqnsetup| 等）はテンプレート側のプリアンブルに依存する．テンプレート既定と異なる挙動が必要な場合は，\texttt{preambles/} 側の設定と整合するように調整する．
+
+\section{単位・数値（siunitx）}
+単位は原則 \texttt{siunitx} を用いて表記する．典型例：
+\begin{itemize}
+  \item 数値のみ：\verb|\num{1.23e-4}|
+  \item 単位のみ：\verb|\unit{\kilo\metre\per\second\per\mega\parsec}|
+  \item 物理量（数値×単位）：\verb|\qty{70}{\kilo\metre\per\second\per\mega\parsec}|
+\end{itemize}
+
+\noindent
+\textbf{軸ラベル例}（数式中）：\verb|$H(z)\,(\unit{\kilo\metre\per\second\per\mega\parsec})$|．
+
+\medskip
+\noindent
+\textbf{表での桁揃え}：\texttt{siunitx} の \texttt{S} 列型を使うと，小数点位置での整列が可能（必要に応じてテンプレート設定に合わせる）．
+
+\section{数式入力の省力化（physics2）}
+本テンプレートでは，従来の \texttt{physics} パッケージに代えて \texttt{physics2} を用い，
+\texttt{siunitx} と衝突しやすい \verb|\qty| 等を回避しつつ，数式入力を簡潔にする運用を推奨する．
+
+\begin{itemize}
+  \item \textbf{自動括弧}：\verb|\ab( ... )|, \verb|\ab[ ... ]|, \verb|\ab\{ ... \}| など
+  \item \textbf{派生コマンド}：\verb|\pab{...}|（丸括弧），\verb|\bab{...}|（角括弧），\verb|\Bab{...}|（波括弧）など
+  \item 旧 \texttt{physics} 文書の保守が必要な場合は，\texttt{physics2} の \texttt{*.legacy} モジュールで互換コマンドを段階的に導入する
+\end{itemize}
+
+\noindent
+\textbf{実務上の指針}：
+\begin{enumerate}
+  \item 新規執筆では \verb|\left|,\verb|\right| の多用は避け，\verb|\ab| を第一選択とする（括弧サイズの一貫性と可読性のため）．
+  \item 既存原稿で \verb|\qty| を用いている場合は，まず \verb|\qty| を \verb|\ab| に置換し，次に必要に応じて \texttt{ab.legacy} 等の導入を検討する．
+\end{enumerate}
+
+\chapter{図（Figure）}
+\section{原則}
+\begin{itemize}
+  \item 図は，研究で明らかにしたい内容に合致し，単体で理解できるキャプションを付ける．
+  \item 軸ラベルには「量」と「単位」を入れ，単位は括弧で示す（例：$H(z)$,(\unit{\kilogram\meter\per\second})）．
+  \item 凡例・記号・線種は判読可能なサイズにし，白黒印刷でも識別できるよう線種も併用する．
+  \item 本文では「図\#」でなく参照コマンドで引用し，出現順に番号が振られるようにする．
+\end{itemize}
+
+\section{例}
+\begin{figure}[tb]
+  \centering
+  \includegraphics[width=0.7\linewidth]{./images/論文様式.png}
+  \caption{例：結果を要約する図．曲線の意味や条件は本文を見なくても分かるように書く．}
+  \label{fig:example}
+\end{figure}
+
+本文では \zcref{fig:example} として参照する．
+
+\chapter{表（Table）}
+\section{原則（PRD/APS流の推奨を採用）}
+\begin{itemize}
+  \item 表には内容が自明になるキャプションを付け，記号の定義や単位は見出し・キャプションに含める．
+  \item 列見出しに単位をまとめ，縦罫線は原則使わない．水平罫線も最小限（\texttt{booktabs}）とする．
+\end{itemize}
+
+\section{例（booktabs）}
+\begin{table}[tb]
+  \caption{例：主要パラメータ（単位は見出しに含める）．}
+  \label{tab:params}
+  \centering
+  \begin{tabular}{lcc}
+    \toprule
+    Parameter & Value & Unit \\
+    \midrule
+    $H_0$ & \num{70} & \unit{\kilogram\meter\per\second} \\
+    $\Omega_{m0}$ & 0.3 & --- \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\chapter{参考文献（Citations）}
+\begin{itemize}
+  \item 引用した文献はすべて参考文献リストに含め，逆に本文で引用していない文献はリストに入れない．
+  \item 査読付き学術雑誌論文など「一次文献」を主とする（可能な限り）．
+  \item 本文中の引用形式（番号／著者年）と参考文献リストの形式はテンプレート設定に合わせて統一する．
+\end{itemize}
+
+\section{BibLaTeX/Biber の基本運用}
+本テンプレートでは \texttt{.bib} ファイルを用いて文献管理する．原則として，
+\begin{itemize}
+  \item プリアンブルで \verb|\addbibresource{reference.bib}| を宣言する（ファイル名は運用に合わせて変更可）．
+  \item 本文中は \verb|\cite{key}|（またはテンプレートで定義したコマンド）で引用する．
+  \item 末尾に \verb|\printbibliography| を置く．
+\end{itemize}
+\noindent
+コンパイル手順は（例）LuaLaTeX $\rightarrow$ Biber $\rightarrow$ LuaLaTeX $\rightarrow$ LuaLaTeX とし，\texttt{latexmk} を推奨する．
+
+\section{日本語文献を .bib に登録する際の注意（重要）}
+日本語文献を混在させる場合は，次を推奨する．
+\begin{itemize}
+  \item \textbf{UTF-8} で \texttt{.bib} を保存する（LuaLaTeX + Biber を前提）．
+  \item \textbf{\texttt{langid = \{japanese\}}} を付与する（言語別整形・表示の補助）．
+  \item ソート（並び順）が崩れる場合は，\texttt{sortname} などでローマ字の並びキーを明示する（例：\verb|sortname = {Yamada, Taro}|）．
+  \item 著者名の分割を避けたい場合は，\texttt{author = \{\{山田 太郎\}\}} のように二重波括弧で保護する（スタイル依存）．
+  \item 日本語タイトル等で大文字小文字保持が必要な場合は，必要箇所を \verb|{...}| で保護する（英語文献の固有名詞等）．
+\end{itemize}
+
+\section{日本語文献の登録例（BibLaTeX）}
+\begin{verbatim}
+@book{Yamada2020GR,
+  author    = {{山田 太郎}},
+  title     = {{一般相対論入門}},
+  date      = {2020},
+  publisher = {架空出版社},
+  location  = {東京},
+  langid    = {japanese},
+  sortname  = {Yamada, Taro},
+}
+
+@article{Suzuki2019Cosmo,
+  author       = {{鈴木 花子}},
+  title        = {{初期宇宙論の基礎}},
+  journaltitle = {{日本物理学会誌}},
+  date         = {2019},
+  volume       = {74},
+  number       = {3},
+  pages        = {123-130},
+  langid       = {japanese},
+  sortname     = {Suzuki, Hanako},
+}
+\end{verbatim}
+
+\chapter{データ・コード（再現性）}
+\begin{itemize}
+  \item 外部ソースのコード（例：GitHub）を使用した場合は出典 URL を明記する．
+  \item 数値解析の場合，対象方程式・初期条件・パラメータ設定・数値解法（アルゴリズム）を明記する．
+  \item 使用コードは付録にまとめる（またはリポジトリに収録し，参照先を明記する）．
+\end{itemize}
+
+\chapter{付録（Appendix）}
+付録を用いる場合，章番号の出し方（A, B, \dots / 付録A など）は学科規定とテンプレート設定に従う．
+テンプレートの既定が「章番号付きの付録章」になる場合は，規定に応じて \verb|\chapter*| 等で番号を抑制する．
+
+\chapter{提出前チェックリスト（抜粋）}
+\begin{itemize}
+  \item 句読点は「，．」に統一されている．
+  \item 文体（常体）は統一されている．
+  \item 目次ページ番号がローマン体になっている（テンプレート設定を確認）．
+  \item 各章冒頭に要約がある．章数は概ね 5～8 章の範囲に収まっている．
+  \item 参照は \verb|\zcref| 等で統一され（式・図・表・節），ベクトル表記は太字になっている．
+  \item 図表は出現順に参照され，キャプションが単体で理解できる．
+  \item 謝辞が「結論と参考文献の間」にある．
+  \item 参考文献は本文で引用したもののみが列挙され，番号対応が一致している．
+  \item 外部コード・データの出典が明記されている．
+\end{itemize}
+
+\end{document}
