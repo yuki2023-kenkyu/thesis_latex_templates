@@ -2,25 +2,19 @@
 <#
 make_diff.ps1
 - Generate a LaTeX diff PDF between two git refs for a thesis project (LuaLaTeX + biber).
-- Windows-first implementation (PowerShell-native): uses `git archive --format=zip` + Expand-Archive.
-- Produces: diff\out\<job>.pdf  (job = root tex filename without extension)
+- Windows-first implementation: uses `git archive --format=zip` + Expand-Archive.
+- Produces: diff\out\<job>.pdf (job = root tex filename without extension)
 
-Usage examples:
-  # Compare HEAD~1 -> HEAD
-  powershell -ExecutionPolicy Bypass -File .\scripts\make_diff.ps1 -RootTex main.tex -BaseRef HEAD~1 -HeadRef HEAD -Style ja-color
+Cleanup modes:
+  -CleanupMode pdf+changed (default): keep diff\out\<job>.pdf + changed files (from git diff --name-only) + diff root tex
+  -CleanupMode pdf-only            : keep only diff\out\<job>.pdf
+  -CleanupMode none                : keep everything under diff\ (no cleanup)
 
-  # Compare base -> worktree (uncommitted included)
-  powershell -ExecutionPolicy Bypass -File .\scripts\make_diff.ps1 -RootTex main.tex -BaseRef HEAD~1 -CompareWorktree
-
-  # If minted/pygments etc. are used (only when needed)
-  powershell -ExecutionPolicy Bypass -File .\scripts\make_diff.ps1 -RootTex main.tex -BaseRef HEAD~1 -ShellEscape
-
-  # Keep only diff\out\main.pdf after run
-  powershell -ExecutionPolicy Bypass -File .\scripts\make_diff.ps1 -RootTex main.tex -BaseRef HEAD~1 -KeepOnlyPdf
+Examples:
+  powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\make_diff.ps1 -RootTex main.tex -BaseRef HEAD~1 -HeadRef HEAD -Style ja-color
+  powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\make_diff.ps1 -RootTex main.tex -BaseRef HEAD~1 -CleanupMode pdf-only
+  powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\make_diff.ps1 -RootTex main.tex -BaseRef HEAD~1 -CleanupMode none
 #>
-
-Set-StrictMode -Version Latest
-$ErrorActionPreference = "Stop"
 
 [CmdletBinding()]
 param(
@@ -37,14 +31,18 @@ param(
   [string]$DisableCitationMarkup = "auto",
   [switch]$CompareWorktree,
   [switch]$ShellEscape,
-  [switch]$KeepOnlyPdf
+  [ValidateSet("pdf+changed","pdf-only","none")]
+  [string]$CleanupMode = "pdf+changed"
 )
 
-# Reduce mojibake in console output from perl/latexdiff
+Set-StrictMode -Version Latest
+$ErrorActionPreference = "Stop"
+
+# Reduce mojibake in console output from perl/latexdiff (best-effort)
 try { & chcp 65001 | Out-Null } catch {}
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
-# repo root = scripts/ の親
+# repo root = parent of scripts/
 $RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 
 function Assert-Command([string]$cmd) {
@@ -58,6 +56,10 @@ function New-EmptyDir([string]$path) {
 
 function Ensure-Dir([string]$path) {
   if (!(Test-Path $path)) { New-Item -ItemType Directory -Force -Path $path | Out-Null }
+}
+
+function Try-HasCommand([string]$cmd) {
+  try { Get-Command $cmd -ErrorAction Stop | Out-Null; return $true } catch { return $false }
 }
 
 function Export-GitZip([string]$ref, [string]$dest) {
@@ -88,13 +90,120 @@ function Get-PreamblePath([string]$style) {
     "ja-uline"     = "latexdiff_preamble_ja_uline.ltxdiff"
   }
   if ($map.ContainsKey($style)) {
-    return (Join-Path $RepoRoot (Join-Path "preambles" $map[$style]))
+    $p = Join-Path $RepoRoot (Join-Path "preambles" $map[$style])
+    if (!(Test-Path $p)) { throw "latexdiff preamble not found: $p" }
+    return $p
   }
   return $null
 }
 
-function Try-HasCommand([string]$cmd) {
-  try { Get-Command $cmd -ErrorAction Stop | Out-Null; return $true } catch { return $false }
+function Normalize-RelPath([string]$p) {
+  if ($null -eq $p) { return $null }
+  $t = $p.Trim()
+  if ($t.Length -eq 0) { return $null }
+  $t = $t -replace '\\','/'
+  return $t.ToLowerInvariant()
+}
+
+function Get-ChangedPaths([string]$baseRef, [string]$headRef, [bool]$compareWorktree) {
+  $paths = New-Object System.Collections.Generic.List[string]
+
+  if ($compareWorktree) {
+    # changes between baseRef and working tree (tracked)
+    $tracked = & git diff --name-only $baseRef --
+    foreach ($p in $tracked) { if ($p) { $paths.Add($p) } }
+
+    # include untracked files too (optional but practical)
+    $untracked = & git ls-files --others --exclude-standard
+    foreach ($p in $untracked) { if ($p) { $paths.Add($p) } }
+  } else {
+    $tracked = & git diff --name-only $baseRef $headRef --
+    foreach ($p in $tracked) { if ($p) { $paths.Add($p) } }
+  }
+
+  # unique normalized set
+  $set = New-Object 'System.Collections.Generic.HashSet[string]' ([System.StringComparer]::OrdinalIgnoreCase)
+  foreach ($p in $paths) {
+    $n = Normalize-RelPath $p
+    if ($n) { [void]$set.Add($n) }
+  }
+  return $set
+}
+
+function Cleanup-OutDirKeepPdf([string]$outDir, [string]$pdfPath) {
+  # Delete all files under out except the PDF
+  Get-ChildItem -LiteralPath $outDir -Force -Recurse | ForEach-Object {
+    if ($_.PSIsContainer) { return }
+    if ($_.FullName -ieq $pdfPath) { return }
+    Remove-Item -LiteralPath $_.FullName -Force
+  }
+  # Remove empty dirs under out
+  Get-ChildItem -LiteralPath $outDir -Force -Recurse -Directory |
+    Sort-Object FullName -Descending |
+    ForEach-Object {
+      if (-not (Get-ChildItem -LiteralPath $_.FullName -Force)) {
+        Remove-Item -LiteralPath $_.FullName -Force
+      }
+    }
+}
+
+function Cleanup-DiffKeepPdfOnly([string]$diffDir, [string]$outDir, [string]$pdfPath) {
+  if (!(Test-Path $pdfPath)) { throw "Cleanup requested but PDF not found: $pdfPath" }
+
+  Cleanup-OutDirKeepPdf -outDir $outDir -pdfPath $pdfPath
+
+  # Delete everything under diff\ except "out"
+  Get-ChildItem -LiteralPath $diffDir -Force | ForEach-Object {
+    if ($_.Name -ieq "out") { return }
+    Remove-Item -LiteralPath $_.FullName -Recurse -Force
+  }
+}
+
+function Cleanup-DiffKeepPdfAndChanged([string]$diffDir, [string]$outDir, [string]$pdfPath, $keepRelSet, [string]$rootTexRel) {
+  if (!(Test-Path $pdfPath)) { throw "Cleanup requested but PDF not found: $pdfPath" }
+
+  Cleanup-OutDirKeepPdf -outDir $outDir -pdfPath $pdfPath
+
+  # Always keep the diff root tex (it contains DIF markup)
+  $rootNorm = Normalize-RelPath $rootTexRel
+  if ($rootNorm) { [void]$keepRelSet.Add($rootNorm) }
+
+  # Iterate all files under diffDir except out/
+  $diffRoot = (Resolve-Path $diffDir).Path.TrimEnd('\')
+  $prefix = $diffRoot + '\'
+
+  Get-ChildItem -LiteralPath $diffDir -Force -Recurse -File | ForEach-Object {
+    # Skip out directory
+    if ($_.FullName.StartsWith((Join-Path $diffDir "out"), [System.StringComparison]::OrdinalIgnoreCase)) { return }
+
+    $full = $_.FullName
+    $rel = $full
+    if ($full.StartsWith($prefix, [System.StringComparison]::OrdinalIgnoreCase)) {
+      $rel = $full.Substring($prefix.Length)
+    } else {
+      $rel = $_.Name
+    }
+    $relNorm = Normalize-RelPath $rel
+
+    if (-not $relNorm) {
+      Remove-Item -LiteralPath $full -Force
+      return
+    }
+
+    if (-not $keepRelSet.Contains($relNorm)) {
+      Remove-Item -LiteralPath $full -Force
+    }
+  }
+
+  # Remove empty directories under diffDir except out
+  Get-ChildItem -LiteralPath $diffDir -Force -Recurse -Directory |
+    Sort-Object FullName -Descending |
+    ForEach-Object {
+      if ($_.Name -ieq "out") { return }
+      if (-not (Get-ChildItem -LiteralPath $_.FullName -Force)) {
+        Remove-Item -LiteralPath $_.FullName -Force
+      }
+    }
 }
 
 # ---- main ----
@@ -111,6 +220,12 @@ try {
   Assert-Command "biber"
 
   $HasLatexpand = Try-HasCommand "latexpand"
+
+  # Determine keep set BEFORE creating diff directory (based on refs)
+  $keepSet = $null
+  if ($CleanupMode -eq "pdf+changed") {
+    $keepSet = Get-ChangedPaths -baseRef $BaseRef -headRef $HeadRef -compareWorktree ([bool]$CompareWorktree)
+  }
 
   $TempBase = Join-Path $env:TEMP ("latexdiff-base-{0}-{1}" -f ($BaseRef -replace '[^\w\.-]','_'), (Get-Random))
   $TempHead = Join-Path $env:TEMP ("latexdiff-head-{0}-{1}" -f ($HeadRef -replace '[^\w\.-]','_'), (Get-Random))
@@ -203,35 +318,17 @@ try {
     $pdfPath = Join-Path $outDir "$job.pdf"
     Write-Host ("Done: {0}" -f $pdfPath)
 
-    # ---- optional cleanup: keep only diff\out\<job>.pdf ----
-    if ($KeepOnlyPdf) {
-      if (!(Test-Path $pdfPath)) {
-        throw "Cleanup requested but PDF not found: $pdfPath"
-      }
-
-      # 1) Delete all files under diff\out except the PDF
-      Get-ChildItem -LiteralPath $outDir -Force -Recurse | ForEach-Object {
-        if ($_.PSIsContainer) { return }
-        if ($_.FullName -ieq $pdfPath) { return }
-        Remove-Item -LiteralPath $_.FullName -Force
-      }
-
-      # Remove empty dirs under out
-      Get-ChildItem -LiteralPath $outDir -Force -Recurse -Directory |
-        Sort-Object FullName -Descending |
-        ForEach-Object {
-          if (-not (Get-ChildItem -LiteralPath $_.FullName -Force)) {
-            Remove-Item -LiteralPath $_.FullName -Force
-          }
-        }
-
-      # 2) Delete everything under diff\ except "out"
-      Get-ChildItem -LiteralPath $DiffDir -Force | ForEach-Object {
-        if ($_.Name -ieq "out") { return }
-        Remove-Item -LiteralPath $_.FullName -Recurse -Force
-      }
-
-      Write-Host ("Cleanup done: kept only {0}" -f $pdfPath)
+    # ---- cleanup ----
+    if ($CleanupMode -eq "pdf-only") {
+      Cleanup-DiffKeepPdfOnly -diffDir $DiffDir -outDir $outDir -pdfPath $pdfPath
+      Write-Host ("Cleanup(pdf-only) done: kept only {0}" -f $pdfPath)
+    }
+    elseif ($CleanupMode -eq "pdf+changed") {
+      Cleanup-DiffKeepPdfAndChanged -diffDir $DiffDir -outDir $outDir -pdfPath $pdfPath -keepRelSet $keepSet -rootTexRel $RootTex
+      Write-Host ("Cleanup(pdf+changed) done: kept {0} and changed files." -f $pdfPath)
+    }
+    else {
+      Write-Host "Cleanup skipped (CleanupMode=none)."
     }
   }
   finally {
@@ -247,4 +344,4 @@ finally {
 
   Pop-Location | Out-Null
 }
-# EOF
+# ---- end of script ----
