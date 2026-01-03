@@ -1,181 +1,179 @@
-Param(
+#requires -Version 5.1
+[CmdletBinding()]
+param(
   [string]$RootTex = "main.tex",
   [string]$BaseRef = "HEAD~1",
   [string]$HeadRef = "HEAD",
-  [switch]$CompareWorktree,
-
-  # latexdiff style (Japanese-friendly default)
-  [ValidateSet("ja-color","ja-underline","ja-uline","cfont","underline")]
+  [ValidateSet("ja-color","ja-underline","ja-uline","underline","cfont")]
   [string]$Style = "ja-color",
-
-  # latexdiff knobs
+  [ValidateSet("coarse","fine")]
   [string]$MathMarkup = "coarse",
-  [ValidateSet("none","new-only","both")]
+  [ValidateSet("new-only","none","both")]
   [string]$GraphicsMarkup = "new-only",
-
-  # auto: enable for underline styles; true/false: force
-  [ValidateSet("auto","true","false")]
+  [ValidateSet("auto","on","off")]
   [string]$DisableCitationMarkup = "auto",
-
-  # Temporary workspace root (default: system temp)
-  [string]$TmpRoot = ""
+  [switch]$CompareWorktree,
+  [switch]$ShellEscape
 )
-
-<#
-PowerShell-native diff builder for Windows.
-
-Why this script exists:
-  * latexdiff-vc uses a POSIX-shell pipeline (git archive ... | ( cd ... ; tar -xf -)),
-    which often fails when executed from PowerShell/cmd on Windows.
-  * This script avoids that by using `git archive --format=zip` + Expand-Archive,
-    then running `latexdiff` directly.
-
-Outputs:
-  - diff/<project files...>  (a copy of HeadRef or your worktree)
-  - diff/<RootTex>           (diff-marked root tex, overwriting the copied version)
-  - diff/out/<jobname>.pdf   (compiled diff PDF)
-
-Requirements:
-  - git (must be on PATH)
-  - TeX Live / LuaLaTeX + biber
-  - latexdiff (TeX Live: scripts/latexdiff)
-  - (optional) latexpand (for --flatten; TeX Live typically includes it)
-#>
 
 $ErrorActionPreference = "Stop"
 
+# 文字化けを減らす（latexdiff の警告表示用）
+try {
+  & chcp 65001 | Out-Null
+} catch {}
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+
+# repo root = scripts/ の親
+$RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
+
 function Assert-Command([string]$cmd) {
-  if (-not (Get-Command $cmd -ErrorAction SilentlyContinue)) {
-    throw "Required command not found on PATH: $cmd"
+  $null = Get-Command $cmd -ErrorAction Stop
+}
+
+function New-EmptyDir([string]$path) {
+  if (Test-Path $path) { Remove-Item -Recurse -Force $path }
+  New-Item -ItemType Directory -Force -Path $path | Out-Null
+}
+
+function Export-GitZip([string]$ref, [string]$dest) {
+  New-Item -ItemType Directory -Force -Path $dest | Out-Null
+  $zip = Join-Path $env:TEMP ("latexdiff-{0}-{1}.zip" -f ($ref -replace '[^\w\.-]','_'), (Get-Random))
+  if (Test-Path $zip) { Remove-Item -Force $zip }
+
+  & git archive --format=zip --output "$zip" $ref
+  if ($LASTEXITCODE -ne 0) { throw "git archive failed for ref=$ref" }
+
+  Expand-Archive -Path $zip -DestinationPath $dest -Force
+  Remove-Item -Force $zip
+}
+
+function Copy-Worktree([string]$src, [string]$dest) {
+  New-EmptyDir $dest
+  # .git, out, diff, build などを避けてコピー（最低限）
+  $exclude = @(".git","out","diff","build")
+  Get-ChildItem -LiteralPath $src -Force | ForEach-Object {
+    if ($exclude -contains $_.Name) { return }
+    Copy-Item -LiteralPath $_.FullName -Destination (Join-Path $dest $_.Name) -Recurse -Force
   }
 }
 
-function Sanitize-Name([string]$s) {
-  # For directory/file names: replace characters not allowed in Windows paths.
-  return ($s -replace '[\\/:*?"<>|]', '_') -replace '\s+', '_'
+function Get-PreamblePath([string]$style) {
+  $map = @{
+    "ja-color"     = "latexdiff_preamble_ja_color.ltxdiff"
+    "ja-underline" = "latexdiff_preamble_ja_underline.ltxdiff"
+    "ja-uline"     = "latexdiff_preamble_ja_uline.ltxdiff"
+  }
+  if ($map.ContainsKey($style)) {
+    return (Join-Path $RepoRoot (Join-Path "preambles" $map[$style]))
+  }
+  return $null
 }
 
-function Export-GitRefToDir([string]$ref, [string]$destDir) {
-  # Exports the repository state at $ref into $destDir using zip (PowerShell-friendly).
-  $zipName = "git-archive-{0}-{1}.zip" -f (Sanitize-Name $ref), $PID
-  $zipPath = Join-Path $Global:TmpRootAbs $zipName
+# ---- main ----
+Push-Location $RepoRoot
 
-  if (Test-Path $destDir) { Remove-Item -Recurse -Force $destDir }
-  New-Item -ItemType Directory -Force $destDir | Out-Null
+Assert-Command "git"
+Assert-Command "latexdiff"
+Assert-Command "lualatex"
+Assert-Command "biber"
 
-  Write-Host "Exporting $ref -> $destDir"
-  & git archive --format=zip -o $zipPath $ref | Out-Null
-  Expand-Archive -Force -Path $zipPath -DestinationPath $destDir
-  Remove-Item -Force $zipPath
-}
+# latexpand は無い環境もあるので任意扱い
+$HasLatexpand = $true
+try { Get-Command "latexpand" -ErrorAction Stop | Out-Null } catch { $HasLatexpand = $false }
 
-function Copy-WorktreeToDir([string]$destDir) {
-  # Copies current working tree to destDir, excluding .git and build artifacts.
-  if (Test-Path $destDir) { Remove-Item -Recurse -Force $destDir }
-  New-Item -ItemType Directory -Force $destDir | Out-Null
+$TempBase = Join-Path $env:TEMP ("latexdiff-base-{0}-{1}" -f ($BaseRef -replace '[^\w\.-]','_'), (Get-Random))
+$TempHead = Join-Path $env:TEMP ("latexdiff-head-{0}-{1}" -f ($HeadRef -replace '[^\w\.-]','_'), (Get-Random))
 
-  Write-Host "Copying working tree -> $destDir"
-  # robocopy is reliable for large trees; /NFL /NDL to reduce noise.
-  $excludeDirs = @(".git","out","build","diff",".vscode","node_modules")
-  $xd = $excludeDirs | ForEach-Object { "/XD", (Join-Path $RepoRoot $_) }
-  & robocopy $RepoRoot $destDir /E /NFL /NDL /NJH /NJS /NC /NS /NP @xd | Out-Null
-}
+Write-Host "Exporting $BaseRef -> $TempBase"
+New-EmptyDir $TempBase
+Export-GitZip $BaseRef $TempBase
 
-# --- setup ---
-Assert-Command git
-Assert-Command lualatex
-Assert-Command biber
-Assert-Command latexdiff
-
-$RepoRoot = Resolve-Path (Join-Path $PSScriptRoot "..")
-Set-Location $RepoRoot
-
-# temp root
-if ([string]::IsNullOrWhiteSpace($TmpRoot)) {
-  $TmpRootAbs = $env:TEMP
-} else {
-  $TmpRootAbs = (Resolve-Path $TmpRoot).Path
-}
-$Global:TmpRootAbs = $TmpRootAbs
-
-# Prepare diff workspace
-if (Test-Path "diff") { Remove-Item -Recurse -Force "diff" }
-New-Item -ItemType Directory -Force "diff" | Out-Null
-
-# Prepare base/head working copies
-$baseDir = Join-Path $TmpRootAbs ("latexdiff-base-{0}-{1}" -f (Sanitize-Name $BaseRef), $PID)
-$headDir = Join-Path $TmpRootAbs ("latexdiff-head-{0}-{1}" -f (Sanitize-Name $HeadRef), $PID)
-
-Export-GitRefToDir $BaseRef $baseDir
-
+Write-Host "Exporting $HeadRef -> $TempHead"
+New-EmptyDir $TempHead
 if ($CompareWorktree) {
-  Copy-WorktreeToDir $headDir
-  Copy-WorktreeToDir (Join-Path $RepoRoot "diff")  # compilation workspace
-  Write-Host "Generating diff: $BaseRef -> working tree ($RootTex)"
+  Copy-Worktree $RepoRoot $TempHead
 } else {
-  Export-GitRefToDir $HeadRef $headDir
-  Export-GitRefToDir $HeadRef (Join-Path $RepoRoot "diff")  # compilation workspace
-  Write-Host "Generating diff: $BaseRef -> $HeadRef ($RootTex)"
+  Export-GitZip $HeadRef $TempHead
 }
 
-$oldTex = Join-Path $baseDir $RootTex
-$newTex = Join-Path $headDir $RootTex
-$diffTex = Join-Path (Join-Path $RepoRoot "diff") $RootTex
+$DiffDir = Join-Path $RepoRoot "diff"
+Write-Host "Exporting $HeadRef -> $DiffDir"
+Copy-Worktree $TempHead $DiffDir
 
-if (-not (Test-Path $oldTex)) { throw "Old tex not found: $oldTex" }
-if (-not (Test-Path $newTex)) { throw "New tex not found: $newTex" }
+$BaseTex = Join-Path $TempBase $RootTex
+$HeadTex = Join-Path $TempHead $RootTex
+if (!(Test-Path $BaseTex)) { throw "Base tex not found: $BaseTex" }
+if (!(Test-Path $HeadTex)) { throw "Head tex not found: $HeadTex" }
 
-# --- latexdiff options ---
-$diffOpts = @(
-  "--encoding=utf8",
-  "--flatten",
-  "--math-markup=$MathMarkup",
-  "--graphics-markup=$GraphicsMarkup"
+$BaseFlat = Join-Path $env:TEMP ("latexdiff-base-flat-{0}.tex" -f (Get-Random))
+$HeadFlat = Join-Path $env:TEMP ("latexdiff-head-flat-{0}.tex" -f (Get-Random))
+
+if ($HasLatexpand) {
+  Write-Host "Flattening with latexpand..."
+  & latexpand "$BaseTex" | Out-File -FilePath $BaseFlat -Encoding utf8
+  if ($LASTEXITCODE -ne 0) { throw "latexpand failed (base)" }
+  & latexpand "$HeadTex" | Out-File -FilePath $HeadFlat -Encoding utf8
+  if ($LASTEXITCODE -ne 0) { throw "latexpand failed (head)" }
+} else {
+  Write-Host "latexpand not found; using root tex as-is (diff may miss included-file changes)."
+  Copy-Item -Force $BaseTex $BaseFlat
+  Copy-Item -Force $HeadTex $HeadFlat
+}
+
+$preamble = Get-PreamblePath $Style
+
+Write-Host "Generating diff: $BaseRef -> $HeadRef ($RootTex)"
+$diffTexPath = Join-Path $DiffDir (Split-Path $RootTex -Leaf)
+$ldArgs = @("--encoding=utf8", "--math-markup=$MathMarkup", "--graphics-markup=$GraphicsMarkup")
+if ($preamble) { $ldArgs += "--preamble=$preamble" }
+
+# cite markup は style/文献状況によって壊れることがあるので auto 選択
+if ($DisableCitationMarkup -eq "on") { $ldArgs += "--disable-citation-markup" }
+elseif ($DisableCitationMarkup -eq "auto" -and $Style -like "*underline*") { $ldArgs += "--disable-citation-markup" }
+
+# latexdiff の出力を diff\main.tex に書く
+& latexdiff @ldArgs "$BaseFlat" "$HeadFlat" | Out-File -FilePath $diffTexPath -Encoding utf8
+if ($LASTEXITCODE -ne 0) { throw "latexdiff failed" }
+Write-Host "Writing diff tex -> $diffTexPath"
+
+# ---- compile diff ----
+$outDir = Join-Path $DiffDir "out"
+New-Item -ItemType Directory -Force -Path $outDir | Out-Null
+
+Push-Location $DiffDir
+
+$texLeaf = Split-Path $RootTex -Leaf
+$job = [System.IO.Path]::GetFileNameWithoutExtension($texLeaf)
+
+$lualatexArgs = @(
+  "-synctex=1",
+  "-interaction=nonstopmode",
+  "-file-line-error",
+  "-halt-on-error",
+  "-output-directory=$outDir"
 )
+if ($ShellEscape) { $lualatexArgs += "-shell-escape" }
 
-switch ($Style) {
-  "ja-color"     { $diffOpts += "--preamble=$(Join-Path $RepoRoot 'preambles/latexdiff_preamble_ja_color.ltxdiff')" }
-  "ja-underline" { $diffOpts += "--preamble=$(Join-Path $RepoRoot 'preambles/latexdiff_preamble_ja_underline.ltxdiff')" }
-  "ja-uline"     { $diffOpts += "--preamble=$(Join-Path $RepoRoot 'preambles/latexdiff_preamble_ja_uline.ltxdiff')" }
-  "cfont"        { $diffOpts += "--type=CFONT" }
-  "underline"    { $diffOpts += "--type=UNDERLINE" }
-}
+Write-Host "Compiling diff\$texLeaf with LuaLaTeX + biber (output: diff\out)"
+& lualatex @lualatexArgs "$texLeaf"
+if ($LASTEXITCODE -ne 0) { throw "lualatex failed (1st pass). Check diff\out\$job.log" }
 
-if ($DisableCitationMarkup -eq "true") {
-  $diffOpts += "--disable-citation-markup"
-} elseif ($DisableCitationMarkup -eq "auto") {
-  if (($Style -eq "underline") -or ($Style -eq "ja-underline")) {
-    $diffOpts += "--disable-citation-markup"
-  }
-}
+& biber "--input-directory=$outDir" "--output-directory=$outDir" "$job"
+if ($LASTEXITCODE -ne 0) { throw "biber failed. Check diff\out\$job.blg" }
 
-# Generate diff tex (overwrite the copied RootTex inside diff/)
-Write-Host "Writing diff tex -> $diffTex"
-$diffDir = Split-Path -Parent $diffTex
-if (-not (Test-Path $diffDir)) { New-Item -ItemType Directory -Force $diffDir | Out-Null }
+& lualatex @lualatexArgs "$texLeaf"
+if ($LASTEXITCODE -ne 0) { throw "lualatex failed (2nd pass). Check diff\out\$job.log" }
 
-# PowerShell: ensure UTF-8 output without BOM (LuaLaTeX generally ok either way, but be safe)
-$utf8NoBom = New-Object System.Text.UTF8Encoding($false)
-$diffContent = & latexdiff @diffOpts $oldTex $newTex
-[System.IO.File]::WriteAllText($diffTex, $diffContent, $utf8NoBom)
-
-# --- compile inside diff workspace ---
-$jobName = [System.IO.Path]::GetFileNameWithoutExtension($RootTex)
-$outDir = Join-Path "out"
-Push-Location "diff"
-
-New-Item -ItemType Directory -Force $outDir | Out-Null
-
-Write-Host "Compiling $RootTex with LuaLaTeX + biber (output: diff\$outDir)"
-& lualatex -synctex=1 -interaction=nonstopmode -file-line-error -halt-on-error -output-directory=$outDir $RootTex
-& biber --input-directory=$outDir --output-directory=$outDir --bblencoding=utf8 -u -U --output_safechars $jobName
-& lualatex -synctex=1 -interaction=nonstopmode -file-line-error -halt-on-error -output-directory=$outDir $RootTex
-& lualatex -synctex=1 -interaction=nonstopmode -file-line-error -halt-on-error -output-directory=$outDir $RootTex
+& lualatex @lualatexArgs "$texLeaf"
+if ($LASTEXITCODE -ne 0) { throw "lualatex failed (3rd pass). Check diff\out\$job.log" }
 
 Pop-Location
 
-Write-Host "Done: diff\out\$jobName.pdf"
+Write-Host ("Done: {0}" -f (Join-Path $outDir "$job.pdf"))
 
-# cleanup temp dirs (best-effort)
-try { if (Test-Path $baseDir) { Remove-Item -Recurse -Force $baseDir } } catch {}
-try { if (Test-Path $headDir) { Remove-Item -Recurse -Force $headDir } } catch {}
+# cleanup temp
+try { Remove-Item -Recurse -Force $TempBase, $TempHead } catch {}
+try { Remove-Item -Force $BaseFlat, $HeadFlat } catch {}
+
+Pop-Location
