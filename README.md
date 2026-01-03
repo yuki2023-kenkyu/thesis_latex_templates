@@ -88,15 +88,6 @@
 - **パスの確認**：ファイルや画像のパスが正しいか確認してください．
 - **文字コード**：ソースファイルの文字コードは必ずUTF-8にしてください．
 
-## ライセンス
-
-このプロジェクトはMITライセンスのもとで公開されています．詳細は[LICENSE](../LICENSE)ファイルを参照してください．
-
-## 問い合わせ
-
-質問や提案がありましたら，リポジトリの[Issueセクション](https://github.com/yuki2023-kenkyu/thesis_latex_templates/issues)までご連絡ください．
-
-
 ---
 
 ## VSCodeビルド設定（重要）
@@ -137,8 +128,52 @@ TeX原稿レビューでは，テキスト差分に加えて **「差分PDF」**
 
 生成物は `diff/out/main.pdf` に出力されます。
 
+#### 差分表示スタイル（下線/色/日本語の崩れ対策）
+
+TeX原稿（特に日本語）では、`ulem` による **下線/打消し（UNDERLINE系）** が原因で
+行分割が不自然になったり、パッケージ相性でコンパイルが不安定になることがあります。
+
+本リポジトリでは、次の5つを用意しています。
+
+- `ja-color`（既定・推奨）: **色のみ**（`ulem`不使用、フォント切替なし）で最も安定
+- `ja-underline`: 下線/打消し（`ulem`使用）。日本語で崩れる場合は `ja-color` に戻す
+- `ja-uline`: 下線/打消し（`uline--`使用）。日本語の改行崩れ対策の選択肢（要インストール）
+- `cfont`: latexdiff標準のCFONT（色+フォント切替）
+- `underline`: latexdiff標準のUNDERLINE（`ulem`使用）
+
+切り替えは環境変数で行います。
+
+- macOS/Linux:
+  - `LTXDIFF_STYLE=ja-color ./scripts/make_diff.sh`
+  - `LTXDIFF_STYLE=ja-underline ./scripts/make_diff.sh`
+  - `LTXDIFF_STYLE=ja-uline ./scripts/make_diff.sh`  （要 uline--）
+- Windows:
+  - `powershell -ExecutionPolicy Bypass -File .\scripts\make_diff.ps1 -Style ja-color`
+  - `powershell -ExecutionPolicy Bypass -File .\scripts\make_diff.ps1 -Style ja-underline`
+  - `powershell -ExecutionPolicy Bypass -File .\scripts\make_diff.ps1 -Style ja-uline`  （要 uline--）
+
+追加で、以下も調整可能です。
+
+- `LTXDIFF_MATH_MARKUP`（既定: `coarse`）: 数式差分が壊れる場合は `whole` や `off` を検討
+- `LTXDIFF_GRAPHICS_MARKUP`（既定: `new-only`）: 図の強調が原因でエラーが出る場合は `none`
+- `LTXDIFF_DISABLE_CITATION_MARKUP`（既定: `auto`）: UNDERLINE系のときに `\mbox` 保護を抑制
+
 ### GitHub Actions（PRごとに自動生成）
 
-- `.github/workflows/build-pdf.yml`: `main.tex` と `style_guide_updated.tex` をビルドしてPDFをArtifactとして保存
-- `.github/workflows/diff-pdf.yml`: PRのbase/head間で `latexdiff-vc` により差分TeXを生成し，差分PDFをArtifactとして保存
+- `build-pdf.yml`（mainブランチpush時）: `main.tex` と `style_guide_updated.tex` をビルドしてPDFをArtifactとして保存
+- `pr-review-pdfs.yml`（PR時）:
+  - `main.tex` / `style_guide_updated.tex` をビルド
+  - PRのbase/head間で `latexdiff-vc` により差分TeXを生成し，差分PDFをビルド
+  - Artifactのダウンロードリンクを **PRコメントに自動投稿（既存コメントは更新）**
+
+注意: PRがforkから作られた場合、権限の都合でPRコメント投稿が無効になることがあります。
+
+---
+## ライセンス
+
+このプロジェクトはMITライセンスのもとで公開されています．詳細は[LICENSE](../LICENSE)ファイルを参照してください．
+
+## 問い合わせ
+
+質問や提案がありましたら，リポジトリの[Issueセクション](https://github.com/yuki2023-kenkyu/thesis_latex_templates/issues)までご連絡ください．
 

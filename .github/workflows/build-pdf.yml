@@ -3,7 +3,7 @@ name: Build PDFs
 on:
   push:
     branches: [ main ]
-  pull_request:
+  # PR builds are handled by .github/workflows/pr-review-pdfs.yml (which also posts links)
 
 jobs:
   build:

@@ -2,7 +2,20 @@ Param(
   [string]$RootTex = "main.tex",
   [string]$BaseRef = "HEAD~1",
   [string]$HeadRef = "HEAD",
-  [switch]$CompareWorktree
+  [switch]$CompareWorktree,
+
+  # latexdiff style (Japanese-friendly default)
+  [ValidateSet("ja-color","ja-underline","ja-uline","cfont","underline")]
+  [string]$Style = "ja-color",
+
+  # latexdiff knobs
+  [string]$MathMarkup = "coarse",
+  [ValidateSet("none","new-only","both")]
+  [string]$GraphicsMarkup = "new-only",
+
+  # auto: enable for underline styles; true/false: force
+  [ValidateSet("auto","true","false")]
+  [string]$DisableCitationMarkup = "auto"
 )
 
 <#
@@ -27,12 +40,35 @@ Set-Location $RepoRoot
 if (Test-Path "diff") { Remove-Item -Recurse -Force "diff" }
 New-Item -ItemType Directory -Force "diff" | Out-Null
 
+# --- latexdiff options ---
+$diffOpts = @(
+  "--encoding=utf8",
+  "--math-markup=$MathMarkup",
+  "--graphics-markup=$GraphicsMarkup"
+)
+
+switch ($Style) {
+  "ja-color" { $diffOpts += "--preamble=preambles/latexdiff_preamble_ja_color.ltxdiff" }
+  "ja-underline" { $diffOpts += "--preamble=preambles/latexdiff_preamble_ja_underline.ltxdiff" }
+  "ja-uline" { $diffOpts += "--preamble=preambles/latexdiff_preamble_ja_uline.ltxdiff" }
+  "cfont" { $diffOpts += "--type=CFONT" }
+  "underline" { $diffOpts += "--type=UNDERLINE" }
+}
+
+if ($DisableCitationMarkup -eq "true") {
+  $diffOpts += "--disable-citation-markup"
+} elseif ($DisableCitationMarkup -eq "auto") {
+  if (($Style -eq "underline") -or ($Style -eq "ja-underline")) {
+    $diffOpts += "--disable-citation-markup"
+  }
+}
+
 if ($CompareWorktree) {
   Write-Host "Generating diff: $BaseRef -> working tree ($RootTex)"
-  & latexdiff-vc --git --flatten --force -d diff -r $BaseRef $RootTex
+  & latexdiff-vc @diffOpts --git --flatten --force -d diff -r $BaseRef $RootTex
 } else {
   Write-Host "Generating diff: $BaseRef -> $HeadRef ($RootTex)"
-  & latexdiff-vc --git --flatten --force -d diff -r $BaseRef -r $HeadRef $RootTex
+  & latexdiff-vc @diffOpts --git --flatten --force -d diff -r $BaseRef -r $HeadRef $RootTex
 }
 
 $DiffTex = Join-Path "diff" ([System.IO.Path]::GetFileName($RootTex))

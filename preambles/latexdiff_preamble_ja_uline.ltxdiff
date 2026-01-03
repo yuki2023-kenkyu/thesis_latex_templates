@@ -1,0 +1,57 @@
+% latexdiff preamble (Japanese): underline/strikeout with uline--
+% -------------------------------------------------------------
+% This preamble is for users who want UNDERLINE-style markup *and* need
+% Japanese line breaks to remain natural.
+%
+% Requirements:
+%   - uline-- (not always bundled by default in some TeX installations)
+%     See the Qiita note in README for a practical workaround.
+%
+% Usage:
+%   LTXDIFF_STYLE=ja-uline ./scripts/make_diff.sh
+%
+% (If uline-- is not installed, compilation will fail. In that case, use
+%  ja-color instead.)
+
+%DIF PREAMBLE EXTENSION ADDED BY LATEXDIFF
+%DIF UNDERLINE PREAMBLE %DIF PREAMBLE
+\RequirePackage{color}\definecolor{RED}{rgb}{1,0,0}\definecolor{BLUE}{rgb}{0,0,1} %DIF PREAMBLE
+\RequirePackage[usetype1]{uline--} %DIF PREAMBLE
+\providecommand{\texorpdfstring}[2]{#1}% safe fallback if hyperref not loaded %DIF PREAMBLE
+\providecommand{\DIFadd}[1]{\texorpdfstring{{\protect\color{blue}\uwave{#1}}}{#1}} %DIF PREAMBLE
+\providecommand{\DIFdel}[1]{\texorpdfstring{{\protect\color{red}\mline{#1}}}{#1}} %DIF PREAMBLE
+\newcommand{\DIFaddbegin}{} %DIF PREAMBLE
+\newcommand{\DIFaddend}{} %DIF PREAMBLE
+\newcommand{\DIFdelbegin}{} %DIF PREAMBLE
+\newcommand{\DIFdelend}{} %DIF PREAMBLE
+\newcommand{\DIFaddbeginFL}{} %DIF PREAMBLE
+\newcommand{\DIFaddendFL}{} %DIF PREAMBLE
+\newcommand{\DIFdelbeginFL}{} %DIF PREAMBLE
+\newcommand{\DIFdelendFL}{} %DIF PREAMBLE
+\providecommand{\DIFaddFL}[1]{\DIFadd{#1}} %DIF PREAMBLE
+\providecommand{\DIFdelFL}[1]{\DIFdel{#1}} %DIF PREAMBLE
+
+%DIF SAFE PREAMBLE %DIF PREAMBLE
+\providecommand{\DIFadd}[1]{\texorpdfstring{{\protect\color{blue}#1}}{#1}} %DIF PREAMBLE
+\providecommand{\DIFdel}[1]{\texorpdfstring{{\protect\color{red}\mline{#1}}}{#1}} %DIF PREAMBLE
+
+%DIF FLOATSAFE PREAMBLE %DIF PREAMBLE
+\providecommand{\DIFaddbeginFL}{} %DIF PREAMBLE
+\providecommand{\DIFaddendFL}{} %DIF PREAMBLE
+\providecommand{\DIFdelbeginFL}{} %DIF PREAMBLE
+\providecommand{\DIFdelendFL}{} %DIF PREAMBLE
+
+%DIF LISTINGS PREAMBLE %DIF PREAMBLE
+\RequirePackage{listings} %DIF PREAMBLE
+\lstdefinelanguage{DIFcode}{ %DIF PREAMBLE
+  moredelim=[il][\color{red}\mline]{\%DIF\ <\ }, %DIF PREAMBLE
+  moredelim=[il][\color{blue}\uwave]{\%DIF\ >\ } %DIF PREAMBLE
+} %DIF PREAMBLE
+\lstdefinestyle{DIFverbatimstyle}{ %DIF PREAMBLE
+  language=DIFcode, %DIF PREAMBLE
+  basicstyle=\ttfamily\scriptsize, %DIF PREAMBLE
+  columns=fullflexible, %DIF PREAMBLE
+  keepspaces=true %DIF PREAMBLE
+} %DIF PREAMBLE
+\lstnewenvironment{DIFverbatim}{\lstset{style=DIFverbatimstyle}}{} %DIF PREAMBLE
+\lstnewenvironment{DIFverbatim*}{\lstset{style=DIFverbatimstyle}}{} %DIF PREAMBLE

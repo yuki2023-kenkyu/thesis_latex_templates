@@ -1,0 +1,38 @@
+% latexdiff preamble (Japanese-safe): color-only markup
+% ----------------------------------------------------
+% This file is intended for use with:
+%   latexdiff --preamble=preambles/latexdiff_preamble_ja_color.ltxdiff old.tex new.tex
+% or via latexdiff-vc (git):
+%   latexdiff-vc --preamble=preambles/latexdiff_preamble_ja_color.ltxdiff --git ... main.tex
+%
+% Rationale
+%   - Avoid ulem-based underline/strikeout which can degrade Japanese line breaking.
+%   - Avoid font-family switching (e.g., CFONT's \sf) that may look odd in Japanese.
+%   - Keep hyperref PDF strings safe via \texorpdfstring fallback.
+
+\RequirePackage{xcolor}
+\definecolor{DIFaddcolor}{rgb}{0,0,1}
+\definecolor{DIFdelcolor}{rgb}{1,0,0}
+
+% If hyperref is not loaded, provide a harmless fallback.
+\providecommand{\texorpdfstring}[2]{#1}
+
+% --- Inline markup ---
+\providecommand{\DIFadd}[1]{\texorpdfstring{{\protect\color{DIFaddcolor}#1}}{#1}}
+\providecommand{\DIFdel}[1]{\texorpdfstring{{\protect\color{DIFdelcolor}\footnotesize #1}}{#1}}
+
+% --- Block markup ---
+\providecommand{\DIFaddbegin}{}
+\providecommand{\DIFaddend}{}
+\providecommand{\DIFdelbegin}{}
+\providecommand{\DIFdelend}{}
+\providecommand{\DIFmodbegin}{}
+\providecommand{\DIFmodend}{}
+
+% --- Floats (avoid margin notes etc. inside floats) ---
+\providecommand{\DIFaddFL}[1]{\DIFadd{#1}}
+\providecommand{\DIFdelFL}[1]{\DIFdel{#1}}
+\providecommand{\DIFaddbeginFL}{}
+\providecommand{\DIFaddendFL}{}
+\providecommand{\DIFdelbeginFL}{}
+\providecommand{\DIFdelendFL}{}
