@@ -58,8 +58,9 @@
   // https://qiita.com/fuku_uma/items/e5ad46125a9612320273
   // https://everykalax.hateblo.jp/entry/2022/12/15/144238#%E4%BB%98%E9%8C%B2-BibLaTeX%E3%82%92%E4%BD%BF%E3%81%88%E3%82%8B%E3%82%88%E3%81%86%E3%81%AB%E3%81%99%E3%82%8B
   // LaTeX Workshop ではビルド設定を「Tool」と「Recipe」という2つで考える
-  "latex-workshop.latex.outDir": "%DIR%/build",
-  "latex-workshop.latex.recipe.default": "lastUsed",
+  "latex-workshop.latex.outDir": "out",
+  "latex-workshop.latex.clean.method": "glob",
+  "latex-workshop.latex.recipe.default": "first",
 
   "latex-workshop.latex.autoBuild.run": "onSave",
   "latex-workshop.latex.autoClean.run": "onBuilt",
@@ -107,7 +108,7 @@
 
   "latex-workshop.latex.recipes": [
     {
-      "name": "LuaLaTeX (safe) → biber → LuaLaTeX*2",
+      "name": "lualatex (biblatex+biber)",
       "tools": [
         "lualatex",
         "biber",
@@ -116,7 +117,7 @@
       ]
     },
     {
-      "name": "LuaLaTeX (shell-escape) → biber → LuaLaTeX*2",
+      "name": "lualatex + shell-escape (minted等)",
       "tools": [
         "lualatex-shell-escape",
         "biber",
@@ -127,25 +128,24 @@
   ],
 
   "latex-workshop.latex.clean.fileTypes": [
-    "*.aux",
-    "*.bbl",
-    "*.bcf",
-    "*.blg",
-    "*.idx",
-    "*.ind",
-    "*.lof",
-    "*.lot",
-    "*.out",
-    "*.toc",
-    "*.fls",
-    "*.log",
-    "*.fdb_latexmk",
-    "*.run.xml",
-    "*.synctex.gz",
-    "_minted*",
+    "%DOCFILE%.aux",
+    "%DOCFILE%.bbl",
+    "%DOCFILE%.bcf",
+    "%DOCFILE%.blg",
+    "%DOCFILE%.fdb_latexmk",
+    "%DOCFILE%.fls",
+    "%DOCFILE%.lof",
+    "%DOCFILE%.log",
+    "%DOCFILE%.lot",
+    "%DOCFILE%.out",
+    "%DOCFILE%.run.xml",
+    "%DOCFILE%.toc",
+    "%DOCFILE%.synctex.gz",
     "*.nav",
     "*.snm",
-    "*.vrb"
+    "*.vrb",
+    "_minted-*/**",
+    "_minted-*/"
   ],
 
   "latex-workshop.view.pdf.viewer": "tab",
@@ -204,7 +204,7 @@
     "，": true,
     "．": true
   },
-  "latex-workshop.latex.recipe.default": "lastUsed",
+  "latex-workshop.latex.recipe.default": "first",
   "latex-workshop.synctex.afterBuild.enabled": true,
   "latex-workshop.bibtex.engine": "biber",
 }

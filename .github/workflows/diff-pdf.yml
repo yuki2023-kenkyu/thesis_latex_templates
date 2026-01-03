@@ -1,0 +1,38 @@
+name: Diff PDF (latexdiff)
+
+on:
+  pull_request:
+
+jobs:
+  latexdiff:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository (full history for diff)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install latexdiff
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y latexdiff
+
+      - name: Generate diff TeX (base vs head)
+        run: |
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+          rm -rf diff
+          latexdiff-vc --git --flatten --force -d diff -r "${BASE_SHA}" -r "${HEAD_SHA}" main.tex
+          test -f diff/main.tex
+
+      - name: Compile diff TeX (LuaLaTeX + biber)
+        uses: xu-cheng/latex-action@v4
+        with:
+          root_file: diff/main.tex
+          latexmk_use_lualatex: true
+
+      - name: Upload diff PDF
+        uses: actions/upload-artifact@v4
+        with:
+          name: diff-pdf
+          path: diff/main.pdf

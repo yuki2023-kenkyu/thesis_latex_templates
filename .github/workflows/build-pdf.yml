@@ -1,0 +1,29 @@
+name: Build PDFs
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Compile LaTeX (LuaLaTeX + biber)
+        uses: xu-cheng/latex-action@v4
+        with:
+          root_file: |
+            main.tex
+            style_guide_updated.tex
+          latexmk_use_lualatex: true
+
+      - name: Upload PDFs
+        uses: actions/upload-artifact@v4
+        with:
+          name: pdf
+          path: |
+            main.pdf
+            style_guide_updated.pdf
