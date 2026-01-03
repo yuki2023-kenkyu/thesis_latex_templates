@@ -1,4 +1,3 @@
-*out
 .tmp.driveupload/*
 .tmp.drivedownload/*
 *.aux,
@@ -20,7 +19,6 @@
 *.is,
 *.fls,
 *.log,
-*.out,
 *.fdb_latexmk,
 *.run.xml,
 *.synctex.gz,
@@ -28,6 +26,3 @@ _minted*,
 *.nav,
 *.snm,
 *.vrb
-# パッケージフォルダ内の .ts ファイルは要らない
-build/**/*.bbl
-build/**/*.synctex.gz

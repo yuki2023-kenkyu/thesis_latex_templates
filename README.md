@@ -48,7 +48,7 @@
 - `main.tex`の実行
   - vscodeの左側に表示されている拡張機能のメニューのうち，`TEX`を選択．
   - 一番上の`LaTeXプロジェクトビルド`を選択．
-  - `レシピ:lualatex`を選択して実行．
+  - `レシピ:lualatex (biblatex+biber)`を選択して実行．
 
 ### 3. コンテンツの編集
 
@@ -95,3 +95,50 @@
 ## 問い合わせ
 
 質問や提案がありましたら，リポジトリの[Issueセクション](https://github.com/yuki2023-kenkyu/thesis_latex_templates/issues)までご連絡ください．
+
+
+---
+
+## VSCodeビルド設定（重要）
+
+本テンプレートは **biblatex + biber** を前提とし，**LuaLaTeXのみ**でビルドします。
+
+- `.vscode/settings.json` では，生成物を `out/` に集約するために `latex-workshop.latex.outDir: "out"` を設定しています（OS共通）。
+- 既定レシピは `lualatex (biblatex+biber)` です。
+
+### `-shell-escape` が必要になるケース（minted等）
+
+`-shell-escape` は，LaTeXコンパイル中に外部コマンド実行（\write18）を許可するオプションです。  
+主に以下のようなパッケージ・機能で必要になります。
+
+- `minted`（Pygmentsを呼び出すため）
+- `gnuplottex` / `pythontex` 等（外部プログラム実行が前提）
+
+本テンプレートは標準で `listings` を使うため **通常は不要**です。必要な場合のみ，
+VSCodeのレシピ `lualatex + shell-escape (minted等)` に切り替えてください。
+
+---
+
+## Gitでのレビュー効率化（差分PDF）
+
+TeX原稿レビューでは，テキスト差分に加えて **「差分PDF」** があると確認が格段に容易になります。
+
+### ローカルで差分PDFを生成（latexdiff-vc）
+
+- macOS/Linux: `./scripts/make_diff.sh`
+- Windows(PowerShell): `./scripts/make_diff.ps1`
+
+例（直近2コミット間）：
+
+- macOS/Linux:
+  - `./scripts/make_diff.sh main.tex HEAD~1 HEAD`
+- Windows:
+  - `powershell -ExecutionPolicy Bypass -File .\scripts\make_diff.ps1 -RootTex main.tex -BaseRef HEAD~1 -HeadRef HEAD`
+
+生成物は `diff/out/main.pdf` に出力されます。
+
+### GitHub Actions（PRごとに自動生成）
+
+- `.github/workflows/build-pdf.yml`: `main.tex` と `style_guide_updated.tex` をビルドしてPDFをArtifactとして保存
+- `.github/workflows/diff-pdf.yml`: PRのbase/head間で `latexdiff-vc` により差分TeXを生成し，差分PDFをArtifactとして保存
+
