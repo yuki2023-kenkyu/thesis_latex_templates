@@ -58,105 +58,74 @@
   // https://qiita.com/fuku_uma/items/e5ad46125a9612320273
   // https://everykalax.hateblo.jp/entry/2022/12/15/144238#%E4%BB%98%E9%8C%B2-BibLaTeX%E3%82%92%E4%BD%BF%E3%81%88%E3%82%8B%E3%82%88%E3%81%86%E3%81%AB%E3%81%99%E3%82%8B
   // LaTeX Workshop ではビルド設定を「Tool」と「Recipe」という2つで考える
-  "latex-workshop.latex.recipes": [
-    {
-      // LuaLaTeX用の新しいレシピ
-      "name": "lualatex",
-      "tools": [
-        "lualatex",
-        "Biber",
-        "lualatex",
-        "lualatex",
-        // "move",
-        "delete"
-      ]
-    }
-  ],
+  "latex-workshop.latex.outDir": "%DIR%/build",
+  "latex-workshop.latex.recipe.default": "lastUsed",
+
+  "latex-workshop.latex.autoBuild.run": "onSave",
+  "latex-workshop.latex.autoClean.run": "onBuilt",
+
   "latex-workshop.latex.tools": [
     {
-      "name": "platex",
-      "command": "platex",
-      "args": [
-        "-synctex=1",
-        "-interaction=nonstopmode",
-        "-file-line-error",
-        "-kanji=utf8",
-        "-shell-escape",
-        "%DOCFILE%.tex"
-      ]
-    },
-    {
-      "name": "dvipdfmx",
-      "command": "dvipdfmx",
-      "args": [
-        "%DOCFILE%.dvi"
-      ]
-    },
-    {
-      "name": "Biber",
-      "command": "biber",
-      "args": [
-        "%DOCFILE%",
-        "--output-directory=%OUTDIR%",
-        "--bblencoding=utf8",
-        "-u",
-        "-U",
-        "--output_safechars"
-      ]
-    },
-    {
-      "name": "move",
-      "command": "copy",
-      "args": [
-        "%DOCFILE%.pdf",
-        "out"
-      ]
-    },
-    {
-      "name": "delete",
-      "command": "del",
-      "args": [
-        "/q",
-        "out",
-        "%DOCFILE%.aux",
-        "%DOCFILE%.bbl",
-        "%DOCFILE%.bcf",
-        "%DOCFILE%.blg",
-        "%DOCFILE%.dvi",
-        "%DOCFILE%.idx",
-        "%DOCFILE%.ilg",
-        "%DOCFILE%.ind",
-        "%DOCFILE%.lof",
-        "%DOCFILE%.log",
-        "%DOCFILE%.lot",
-        "%DOCFILE%.out",
-        "%DOCFILE%.run.xml",
-        "%DOCFILE%.toc",
-        "%DOCFILE%.synctex.gz"
-      ]
-    },
-    {
-      // ここにlualatexツールを追加
       "name": "lualatex",
       "command": "lualatex",
       "args": [
         "-synctex=1",
         "-interaction=nonstopmode",
         "-file-line-error",
+        "-halt-on-error",
+        "-output-directory=%OUTDIR%",
+        "%DOC%"
+      ]
+    },
+    {
+      "name": "lualatex-shell-escape",
+      "command": "lualatex",
+      "args": [
+        "-synctex=1",
+        "-interaction=nonstopmode",
+        "-file-line-error",
+        "-halt-on-error",
         "-shell-escape",
-        "%DOCFILE%.tex"
+        "-output-directory=%OUTDIR%",
+        "%DOC%"
+      ]
+    },
+    {
+      "name": "biber",
+      "command": "biber",
+      "args": [
+        "--input-directory=%OUTDIR%",
+        "--output-directory=%OUTDIR%",
+        "--bblencoding=utf8",
+        "-u",
+        "-U",
+        "--output_safechars",
+        "%DOCFILE%"
       ]
     }
   ],
-  "latex-workshop.latex.magic.args": [
-    "-f",
-    "-gg",
-    "-pv",
-    "-synctex=1",
-    "-interaction=nonstopmode",
-    "-file-line-error",
-    "%DOC%"
+
+  "latex-workshop.latex.recipes": [
+    {
+      "name": "LuaLaTeX (safe) → biber → LuaLaTeX*2",
+      "tools": [
+        "lualatex",
+        "biber",
+        "lualatex",
+        "lualatex"
+      ]
+    },
+    {
+      "name": "LuaLaTeX (shell-escape) → biber → LuaLaTeX*2",
+      "tools": [
+        "lualatex-shell-escape",
+        "biber",
+        "lualatex-shell-escape",
+        "lualatex-shell-escape"
+      ]
+    }
   ],
+
   "latex-workshop.latex.clean.fileTypes": [
     "*.aux",
     "*.bbl",
@@ -168,17 +137,8 @@
     "*.lot",
     "*.out",
     "*.toc",
-    "*.acn",
-    "*.acr",
-    "*.alg",
-    "*.glg",
-    "*.glo",
-    "*.gls",
-    "*.ist",
     "*.fls",
     "*.log",
-    "*.out",
-    "out",
     "*.fdb_latexmk",
     "*.run.xml",
     "*.synctex.gz",
@@ -187,9 +147,9 @@
     "*.snm",
     "*.vrb"
   ],
-  "latex-workshop.latex.autoClean.run": "onBuilt",
+
   "latex-workshop.view.pdf.viewer": "tab",
-  "latex-workshop.latex.autoBuild.run": "onSave",
+  "latex-workshop.synctex.afterBuild.enabled": true,
   "[tex]": {
     "editor.suggest.snippetsPreventQuickSuggestions": false,
     "editor.tabSize": 2

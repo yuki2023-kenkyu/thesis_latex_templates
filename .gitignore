@@ -28,3 +28,6 @@ _minted*,
 *.nav,
 *.snm,
 *.vrb
+# パッケージフォルダ内の .ts ファイルは要らない
+build/**/*.bbl
+build/**/*.synctex.gz
