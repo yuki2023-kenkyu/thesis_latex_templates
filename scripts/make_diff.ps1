@@ -9,6 +9,12 @@ Cleanup modes:
   -CleanupMode pdf+changed (default): keep diff\out\<job>.pdf + changed files (from git diff --name-only) + diff root tex
   -CleanupMode pdf-only            : keep only diff\out\<job>.pdf
   -CleanupMode none                : keep everything under diff\ (no cleanup)
+
+Examples:
+  powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\make_diff.ps1 -RootTex main.tex -BaseRef HEAD~1 -HeadRef HEAD -Style ja-color
+  powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\make_diff.ps1 -RootTex main.tex -BaseRef origin/main -HeadRef HEAD
+  powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\make_diff.ps1 -RootTex main.tex -BaseRef HEAD~1 -CompareWorktree
+  powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\make_diff.ps1 -CleanupMode none
 #>
 
 [CmdletBinding()]
@@ -33,22 +39,38 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
+# Reduce mojibake in console output from perl/latexdiff (best-effort)
 try { & chcp 65001 | Out-Null } catch {}
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
+# repo root = parent of scripts/
 $RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 
-function Assert-Command([string]$cmd) { $null = Get-Command $cmd -ErrorAction Stop }
-function New-EmptyDir([string]$path) { if (Test-Path $path) { Remove-Item -Recurse -Force $path }; New-Item -ItemType Directory -Force -Path $path | Out-Null }
-function Ensure-Dir([string]$path) { if (!(Test-Path $path)) { New-Item -ItemType Directory -Force -Path $path | Out-Null } }
-function Try-HasCommand([string]$cmd) { try { Get-Command $cmd -ErrorAction Stop | Out-Null; return $true } catch { return $false } }
+function Assert-Command([string]$cmd) {
+  $null = Get-Command $cmd -ErrorAction Stop
+}
+
+function New-EmptyDir([string]$path) {
+  if (Test-Path $path) { Remove-Item -Recurse -Force $path }
+  New-Item -ItemType Directory -Force -Path $path | Out-Null
+}
+
+function Ensure-Dir([string]$path) {
+  if (!(Test-Path $path)) { New-Item -ItemType Directory -Force -Path $path | Out-Null }
+}
+
+function Try-HasCommand([string]$cmd) {
+  try { Get-Command $cmd -ErrorAction Stop | Out-Null; return $true } catch { return $false }
+}
 
 function Export-GitZip([string]$ref, [string]$dest) {
   Ensure-Dir $dest
   $zip = Join-Path $env:TEMP ("latexdiff-{0}-{1}.zip" -f ($ref -replace '[^\w\.-]','_'), (Get-Random))
   if (Test-Path $zip) { Remove-Item -Force $zip }
+
   & git archive --format=zip --output "$zip" $ref
   if ($LASTEXITCODE -ne 0) { throw "git archive failed for ref=$ref" }
+
   Expand-Archive -Path $zip -DestinationPath $dest -Force
   Remove-Item -Force $zip
 }
@@ -80,19 +102,39 @@ function Normalize-RelPath([string]$p) {
   if ($null -eq $p) { return $null }
   $t = $p.Trim()
   if ($t.Length -eq 0) { return $null }
-  return ($t -replace '\\','/').ToLowerInvariant()
+  $t = $t -replace '\\','/'
+  return $t.ToLowerInvariant()
 }
 
 function New-StringHashSet {
-  return New-Object 'System.Collections.Generic.HashSet[string]' ([System.StringComparer]::OrdinalIgnoreCase)
+  # PowerShell 5.1 で確実に generic HashSet を生成できる表記
+  return New-Object 'System.Collections.Generic.HashSet`1[System.String]' ([System.StringComparer]::OrdinalIgnoreCase)
+}
+
+function Convert-ToStringHashSet($value) {
+  # 既に HashSet[string] ならそのまま
+  if ($value -is [System.Collections.Generic.HashSet[string]]) { return $value }
+
+  $set = New-StringHashSet
+  if ($null -eq $value) { return $set }
+
+  # 文字列1本/配列/複合でも列挙して詰める
+  foreach ($v in @($value)) {
+    $n = Normalize-RelPath ([string]$v)
+    if ($n) { [void]$set.Add($n) }
+  }
+  return $set
 }
 
 function Get-ChangedPathsSafe([string]$baseRef, [string]$headRef, [bool]$compareWorktree) {
   $set = New-StringHashSet
   try {
     if ($compareWorktree) {
+      # baseRef vs working tree (tracked)
       $tracked = & git diff --name-only $baseRef --
       foreach ($p in $tracked) { $n = Normalize-RelPath $p; if ($n) { [void]$set.Add($n) } }
+
+      # include untracked files as well (practical for review)
       $untracked = & git ls-files --others --exclude-standard
       foreach ($p in $untracked) { $n = Normalize-RelPath $p; if ($n) { [void]$set.Add($n) } }
     } else {
@@ -106,21 +148,28 @@ function Get-ChangedPathsSafe([string]$baseRef, [string]$headRef, [bool]$compare
 }
 
 function Cleanup-OutDirKeepPdf([string]$outDir, [string]$pdfPath) {
+  # Delete all files under out except the PDF
   Get-ChildItem -LiteralPath $outDir -Force -Recurse | ForEach-Object {
     if ($_.PSIsContainer) { return }
     if ($_.FullName -ieq $pdfPath) { return }
     Remove-Item -LiteralPath $_.FullName -Force
   }
+  # Remove empty dirs under out
   Get-ChildItem -LiteralPath $outDir -Force -Recurse -Directory |
     Sort-Object FullName -Descending |
     ForEach-Object {
-      if (-not (Get-ChildItem -LiteralPath $_.FullName -Force)) { Remove-Item -LiteralPath $_.FullName -Force }
+      if (-not (Get-ChildItem -LiteralPath $_.FullName -Force)) {
+        Remove-Item -LiteralPath $_.FullName -Force
+      }
     }
 }
 
 function Cleanup-DiffKeepPdfOnly([string]$diffDir, [string]$outDir, [string]$pdfPath) {
   if (!(Test-Path $pdfPath)) { throw "Cleanup requested but PDF not found: $pdfPath" }
+
   Cleanup-OutDirKeepPdf -outDir $outDir -pdfPath $pdfPath
+
+  # Delete everything under diff\ except "out"
   Get-ChildItem -LiteralPath $diffDir -Force | ForEach-Object {
     if ($_.Name -ieq "out") { return }
     Remove-Item -LiteralPath $_.FullName -Recurse -Force
@@ -129,34 +178,51 @@ function Cleanup-DiffKeepPdfOnly([string]$diffDir, [string]$outDir, [string]$pdf
 
 function Cleanup-DiffKeepPdfAndChanged([string]$diffDir, [string]$outDir, [string]$pdfPath, $keepRelSet, [string]$rootTexRel) {
   if (!(Test-Path $pdfPath)) { throw "Cleanup requested but PDF not found: $pdfPath" }
-  if ($null -eq $keepRelSet) { $keepRelSet = New-StringHashSet }  # ★ null安全
+
+  # ★重要: keepRelSet が文字列化されて渡ってきても必ず HashSet に正規化
+  $keepRelSet = Convert-ToStringHashSet $keepRelSet
 
   Cleanup-OutDirKeepPdf -outDir $outDir -pdfPath $pdfPath
 
+  # Always keep the diff root tex (it contains DIF markup)
   $rootNorm = Normalize-RelPath $rootTexRel
-  if ($rootNorm) { [void]$keepRelSet.Add($rootNorm) }             # ★ null安全
+  if ($rootNorm) { [void]$keepRelSet.Add($rootNorm) }
 
   $diffRoot = (Resolve-Path $diffDir).Path.TrimEnd('\')
   $prefix = $diffRoot + '\'
   $outPrefix = (Join-Path $diffDir "out") + '\'
 
+  # Iterate all files under diffDir except out/
   Get-ChildItem -LiteralPath $diffDir -Force -Recurse -File | ForEach-Object {
+    # Skip out directory
     if ($_.FullName.StartsWith($outPrefix, [System.StringComparison]::OrdinalIgnoreCase)) { return }
 
     $full = $_.FullName
-    $rel = if ($full.StartsWith($prefix, [System.StringComparison]::OrdinalIgnoreCase)) { $full.Substring($prefix.Length) } else { $_.Name }
+    $rel = if ($full.StartsWith($prefix, [System.StringComparison]::OrdinalIgnoreCase)) {
+      $full.Substring($prefix.Length)
+    } else {
+      $_.Name
+    }
     $relNorm = Normalize-RelPath $rel
 
-    if (-not $relNorm) { Remove-Item -LiteralPath $full -Force; return }
+    if (-not $relNorm) {
+      Remove-Item -LiteralPath $full -Force
+      return
+    }
 
-    if (-not $keepRelSet.Contains($relNorm)) { Remove-Item -LiteralPath $full -Force }
+    if (-not $keepRelSet.Contains($relNorm)) {
+      Remove-Item -LiteralPath $full -Force
+    }
   }
 
+  # Remove empty directories under diffDir except out
   Get-ChildItem -LiteralPath $diffDir -Force -Recurse -Directory |
     Sort-Object FullName -Descending |
     ForEach-Object {
       if ($_.Name -ieq "out") { return }
-      if (-not (Get-ChildItem -LiteralPath $_.FullName -Force)) { Remove-Item -LiteralPath $_.FullName -Force }
+      if (-not (Get-ChildItem -LiteralPath $_.FullName -Force)) {
+        Remove-Item -LiteralPath $_.FullName -Force
+      }
     }
 }
 
@@ -175,11 +241,11 @@ try {
 
   $HasLatexpand = Try-HasCommand "latexpand"
 
-  # ★ keepSet を必ず “空HashSet” で初期化し、取得に失敗しても null にしない
+  # Compute keep-set early (before we overwrite diff/)
   $keepSet = New-StringHashSet
   if ($CleanupMode -eq "pdf+changed") {
     $keepSet = Get-ChangedPathsSafe -baseRef $BaseRef -headRef $HeadRef -compareWorktree ([bool]$CompareWorktree)
-    if ($null -eq $keepSet) { $keepSet = New-StringHashSet }  # 念のため
+    if ($null -eq $keepSet) { $keepSet = New-StringHashSet }
   }
 
   $TempBase = Join-Path $env:TEMP ("latexdiff-base-{0}-{1}" -f ($BaseRef -replace '[^\w\.-]','_'), (Get-Random))
@@ -191,7 +257,11 @@ try {
 
   Write-Host "Exporting $HeadRef -> $TempHead"
   New-EmptyDir $TempHead
-  if ($CompareWorktree) { Copy-Worktree $RepoRoot $TempHead } else { Export-GitZip $HeadRef $TempHead }
+  if ($CompareWorktree) {
+    Copy-Worktree $RepoRoot $TempHead
+  } else {
+    Export-GitZip $HeadRef $TempHead
+  }
 
   $DiffDir = Join-Path $RepoRoot "diff"
   Write-Host "Exporting $HeadRef -> $DiffDir"
@@ -226,12 +296,16 @@ try {
 
   $ldArgs = @("--encoding=utf8", "--math-markup=$MathMarkup", "--graphics-markup=$GraphicsMarkup")
   if ($preamble) { $ldArgs += "--preamble=$preamble" }
+
+  # Citation markup can break with underline styles; auto-disable there.
   if ($DisableCitationMarkup -eq "on") { $ldArgs += "--disable-citation-markup" }
   elseif ($DisableCitationMarkup -eq "auto" -and $Style -like "*underline*") { $ldArgs += "--disable-citation-markup" }
 
   & latexdiff @ldArgs "$BaseFlat" "$HeadFlat" | Out-File -FilePath $diffTexPath -Encoding utf8
   if ($LASTEXITCODE -ne 0) { throw "latexdiff failed" }
+  Write-Host "Writing diff tex -> $diffTexPath"
 
+  # ---- compile diff ----
   $outDir = Join-Path $DiffDir "out"
   Ensure-Dir $outDir
 
@@ -240,7 +314,13 @@ try {
     $texLeaf = Split-Path -Leaf $RootTex
     $job = [System.IO.Path]::GetFileNameWithoutExtension($texLeaf)
 
-    $lualatexArgs = @("-synctex=1","-interaction=nonstopmode","-file-line-error","-halt-on-error","-output-directory=$outDir")
+    $lualatexArgs = @(
+      "-synctex=1",
+      "-interaction=nonstopmode",
+      "-file-line-error",
+      "-halt-on-error",
+      "-output-directory=$outDir"
+    )
     if ($ShellEscape) { $lualatexArgs += "-shell-escape" }
 
     Write-Host "Compiling diff\$RootTex with LuaLaTeX + biber (output: diff\out)"
@@ -259,22 +339,31 @@ try {
     $pdfPath = Join-Path $outDir "$job.pdf"
     Write-Host ("Done: {0}" -f $pdfPath)
 
+    # ---- cleanup ----
     if ($CleanupMode -eq "pdf-only") {
       Cleanup-DiffKeepPdfOnly -diffDir $DiffDir -outDir $outDir -pdfPath $pdfPath
-    } elseif ($CleanupMode -eq "pdf+changed") {
+      Write-Host ("Cleanup(pdf-only) done: kept only {0}" -f $pdfPath)
+    }
+    elseif ($CleanupMode -eq "pdf+changed") {
       Cleanup-DiffKeepPdfAndChanged -diffDir $DiffDir -outDir $outDir -pdfPath $pdfPath -keepRelSet $keepSet -rootTexRel $RootTex
-    } else {
+      Write-Host ("Cleanup(pdf+changed) done: kept {0} and changed files." -f $pdfPath)
+    }
+    else {
       Write-Host "Cleanup skipped (CleanupMode=none)."
     }
-  } finally {
+  }
+  finally {
     Pop-Location | Out-Null
   }
 }
 finally {
+  # cleanup temp exports/flats
   try { if ($TempBase -and (Test-Path $TempBase)) { Remove-Item -Recurse -Force $TempBase } } catch {}
   try { if ($TempHead -and (Test-Path $TempHead)) { Remove-Item -Recurse -Force $TempHead } } catch {}
   try { if ($BaseFlat -and (Test-Path $BaseFlat)) { Remove-Item -Force $BaseFlat } } catch {}
   try { if ($HeadFlat -and (Test-Path $HeadFlat)) { Remove-Item -Force $HeadFlat } } catch {}
+
   Pop-Location | Out-Null
 }
+
 # End of script
