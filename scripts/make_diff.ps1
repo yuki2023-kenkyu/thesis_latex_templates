@@ -6,7 +6,7 @@ make_diff.ps1
 - Produces: diff\out\<job>.pdf (job = root tex filename without extension)
 
 Cleanup modes:
-  -CleanupMode pdf+changed (default): keep diff\out\<job>.pdf + changed files (from git diff --name-only) + diff root tex
+  -CleanupMode pdf+changed (default): keep diff\out\<job>.pdf + changed compile-related files + (optionally) diff root tex / change_summary
   -CleanupMode pdf-only            : keep only diff\out\<job>.pdf
   -CleanupMode none                : keep everything under diff\ (no cleanup)
 
@@ -109,18 +109,15 @@ function Normalize-RelPath([string]$p) {
 }
 
 function New-StringHashSet {
-  # PowerShell 5.1 で確実に generic HashSet を生成できる表記
   return New-Object 'System.Collections.Generic.HashSet`1[System.String]' ([System.StringComparer]::OrdinalIgnoreCase)
 }
 
 function Convert-ToStringHashSet($value) {
-  # 既に HashSet[string] ならそのまま
   if ($value -is [System.Collections.Generic.HashSet[string]]) { return $value }
 
   $set = New-StringHashSet
   if ($null -eq $value) { return $set }
 
-  # 文字列1本/配列/複合でも列挙して詰める
   foreach ($v in @($value)) {
     $n = Normalize-RelPath ([string]$v)
     if ($n) { [void]$set.Add($n) }
@@ -132,11 +129,9 @@ function Get-ChangedPathsSafe([string]$baseRef, [string]$headRef, [bool]$compare
   $set = New-StringHashSet
   try {
     if ($compareWorktree) {
-      # baseRef vs working tree (tracked)
       $tracked = & git diff --name-only $baseRef --
       foreach ($p in $tracked) { $n = Normalize-RelPath $p; if ($n) { [void]$set.Add($n) } }
 
-      # include untracked files as well (practical for review)
       $untracked = & git ls-files --others --exclude-standard
       foreach ($p in $untracked) { $n = Normalize-RelPath $p; if ($n) { [void]$set.Add($n) } }
     } else {
@@ -144,19 +139,17 @@ function Get-ChangedPathsSafe([string]$baseRef, [string]$headRef, [bool]$compare
       foreach ($p in $tracked) { $n = Normalize-RelPath $p; if ($n) { [void]$set.Add($n) } }
     }
   } catch {
-    Write-Warning "Failed to get changed paths; fallback to keeping only PDF + diff root tex. Details: $($_.Exception.Message)"
+    Write-Warning "Failed to get changed paths; fallback to keeping only PDF. Details: $($_.Exception.Message)"
   }
   return $set
 }
 
 function Cleanup-OutDirKeepPdf([string]$outDir, [string]$pdfPath) {
-  # Delete all files under out except the PDF
   Get-ChildItem -LiteralPath $outDir -Force -Recurse | ForEach-Object {
     if ($_.PSIsContainer) { return }
     if ($_.FullName -ieq $pdfPath) { return }
     Remove-Item -LiteralPath $_.FullName -Force
   }
-  # Remove empty dirs under out
   Get-ChildItem -LiteralPath $outDir -Force -Recurse -Directory |
     Sort-Object FullName -Descending |
     ForEach-Object {
@@ -171,68 +164,15 @@ function Cleanup-DiffKeepPdfOnly([string]$diffDir, [string]$outDir, [string]$pdf
 
   Cleanup-OutDirKeepPdf -outDir $outDir -pdfPath $pdfPath
 
-  # Delete everything under diff\ except "out"
   Get-ChildItem -LiteralPath $diffDir -Force | ForEach-Object {
     if ($_.Name -ieq "out") { return }
     Remove-Item -LiteralPath $_.FullName -Recurse -Force
   }
 }
 
-function Cleanup-DiffKeepPdfAndChanged([string]$diffDir, [string]$outDir, [string]$pdfPath, $keepRelSet, [string]$rootTexRel) {
-  if (!(Test-Path $pdfPath)) { throw "Cleanup requested but PDF not found: $pdfPath" }
-
-  # ★重要: keepRelSet が文字列化されて渡ってきても必ず HashSet に正規化
-  $keepRelSet = Convert-ToStringHashSet $keepRelSet
-
-  Cleanup-OutDirKeepPdf -outDir $outDir -pdfPath $pdfPath
-
-  # Always keep the diff root tex (it contains DIF markup)
-  $rootNorm = Normalize-RelPath $rootTexRel
-  if ($rootNorm) { [void]$keepRelSet.Add($rootNorm) }
-  [void]$keepRelSet.Add((Normalize-RelPath "change_summary.tex"))
-
-  $diffRoot = (Resolve-Path $diffDir).Path.TrimEnd('\')
-  $prefix = $diffRoot + '\'
-  $outPrefix = (Join-Path $diffDir "out") + '\'
-
-  # Iterate all files under diffDir except out/
-  Get-ChildItem -LiteralPath $diffDir -Force -Recurse -File | ForEach-Object {
-    # Skip out directory
-    if ($_.FullName.StartsWith($outPrefix, [System.StringComparison]::OrdinalIgnoreCase)) { return }
-
-    $full = $_.FullName
-    $rel = if ($full.StartsWith($prefix, [System.StringComparison]::OrdinalIgnoreCase)) {
-      $full.Substring($prefix.Length)
-    } else {
-      $_.Name
-    }
-    $relNorm = Normalize-RelPath $rel
-
-    if (-not $relNorm) {
-      Remove-Item -LiteralPath $full -Force
-      return
-    }
-
-    if (-not $keepRelSet.Contains($relNorm)) {
-      Remove-Item -LiteralPath $full -Force
-    }
-  }
-
-  # Remove empty directories under diffDir except out
-  Get-ChildItem -LiteralPath $diffDir -Force -Recurse -Directory |
-    Sort-Object FullName -Descending |
-    ForEach-Object {
-      if ($_.Name -ieq "out") { return }
-      if (-not (Get-ChildItem -LiteralPath $_.FullName -Force)) {
-        Remove-Item -LiteralPath $_.FullName -Force
-      }
-    }
-}
-
 function Escape-LatexText([string]$s) {
-  # For display in \texttt{...}. We keep "/" and escape TeX specials.
   if ([string]::IsNullOrEmpty($s)) { return "" }
-  $t = $s -replace '\\','/'  # unify for display (avoid needing \textbackslash{})
+  $t = $s -replace '\\','/'
   $t = $t -replace '([#\$%&_{}])', '\\$1'
   $t = $t -replace '\^', '\\textasciicircum{}'
   $t = $t -replace '~',  '\\textasciitilde{}'
@@ -255,7 +195,6 @@ function Get-ChangedPathsList([string]$baseRef, [string]$headRef, [bool]$compare
     Write-Warning "Failed to get changed path list for summary: $($_.Exception.Message)"
   }
 
-  # unique while keeping order (case-insensitive)
   $seen = New-StringHashSet
   $out = @()
   foreach ($p in $list) {
@@ -278,12 +217,11 @@ function Write-ChangeSummaryTex([string]$diffDir, [string[]]$changedPaths, [stri
     if ($pp.Length -eq 0) { continue }
     $ext = [System.IO.Path]::GetExtension($pp).ToLowerInvariant()
     if ($ext -eq ".tex") { $texChanged += $pp }
-    elseif ($ext -in @(".bib",".bbx",".cbx")) { $bibChanged += $pp }
+    elseif ($ext -in @(".bib",".bbx",".cbx",".bst")) { $bibChanged += $pp }
     elseif ($ext -in @(".pdf",".png",".jpg",".jpeg",".eps",".svg")) { $imgChanged += $pp }
     else { $otherChanged += $pp }
   }
 
-  # Use a mutable List to avoid scoping pitfalls with "+=" inside nested functions.
   $lines = New-Object 'System.Collections.Generic.List[string]'
   $lines.Add("% Auto-generated by scripts/make_diff.ps1") | Out-Null
   $lines.Add("\begingroup") | Out-Null
@@ -319,7 +257,6 @@ function Write-ChangeSummaryTex([string]$diffDir, [string[]]$changedPaths, [stri
   Add-Group "Other files" $otherChanged
 
   if (-not $addedAnyTopItem) {
-    # Ensure itemize is NEVER empty (prevents "missing \item" at \end{itemize})
     $lines.Add("  \item \textit{(No changed files detected by git diff.)}") | Out-Null
   }
 
@@ -335,7 +272,6 @@ function Insert-ChangeSummaryIntoRootTex([string]$rootTexPath) {
   if (!(Test-Path $rootTexPath)) { return }
   $txt = Get-Content -LiteralPath $rootTexPath -Raw -Encoding utf8
 
-  # Avoid accidental double-insert if rerun in-place
   if ($txt -match '\\input\{change_summary\.tex\}') { return }
 
   $ins = "\input{change_summary.tex}`n\clearpage`n"
@@ -358,8 +294,8 @@ function Apply-InputBoundaryMarkers([string]$flatTexPath, [string]$scope) {
     $p = $m.Groups["path"].Value.Trim()
     $pNorm = Normalize-RelPath $p
     if ($scope -eq "project") {
-      if ($pNorm -notmatch '^(?:\./)?(documents|tables|source_codes|references)/') {
-        return $m.Value  # keep comment as-is
+      if ($pNorm -notmatch '^(?:\./)?(documents|document|tables|images|references|source_codes)/') {
+        return $m.Value
       }
     }
     $escaped = Escape-LatexText $p
@@ -368,6 +304,100 @@ function Apply-InputBoundaryMarkers([string]$flatTexPath, [string]$scope) {
   if ($txt2 -ne $txt) {
     Set-Content -LiteralPath $flatTexPath -Value $txt2 -Encoding utf8
   }
+}
+
+# --- NEW: keep-set filter for "compile-related changed files" ---
+function Filter-CompileRelatedChangedSet($set, [string]$rootTexRel) {
+  $set = Convert-ToStringHashSet $set
+  $filtered = New-StringHashSet
+
+  # Keep changed files that are likely needed to reproduce the diff PDF build.
+  # - TeX inputs: documents/, document/, tables/, references/, source_codes/
+  # - Figures: images/ and common image extensions anywhere under these dirs
+  # - Bibliography and styles: .bib/.bst/.bbx/.cbx, plus .sty/.cls that affect compilation
+  # - Preambles and latexmk-like configs if you store them in repo (optional)
+  foreach ($p in $set) {
+    if (-not $p) { continue }
+
+    if ($p -match '^(documents|document|tables|references|source_codes)/.*\.tex$') {
+      [void]$filtered.Add($p); continue
+    }
+    if ($p -match '^images/.*\.(pdf|png|jpg|jpeg|eps|svg)$') {
+      [void]$filtered.Add($p); continue
+    }
+    if ($p -match '^(documents|document|tables|references|source_codes)/.*\.(pdf|png|jpg|jpeg|eps|svg)$') {
+      [void]$filtered.Add($p); continue
+    }
+    if ($p -match '^(references)/.*\.(bib|bst|bbx|cbx)$') {
+      [void]$filtered.Add($p); continue
+    }
+    if ($p -match '^.*\.(bib|bst|bbx|cbx)$') {
+      # If you keep .bib outside references/, still keep it.
+      [void]$filtered.Add($p); continue
+    }
+    if ($p -match '^.*\.(sty|cls)$') {
+      [void]$filtered.Add($p); continue
+    }
+    if ($p -match '^(preambles)/') {
+      [void]$filtered.Add($p); continue
+    }
+  }
+
+  # Optionally keep the root tex itself if it changed (helps reviewers reproduce).
+  $rootNorm = Normalize-RelPath $rootTexRel
+  if ($rootNorm -and $set.Contains($rootNorm)) {
+    [void]$filtered.Add($rootNorm)
+  }
+
+  return $filtered
+}
+
+# --- NEW: cleanup that keeps only PDF + filtered changed files ---
+function Cleanup-DiffKeepPdfAndCompileChanged(
+  [string]$diffDir,
+  [string]$outDir,
+  [string]$pdfPath,
+  $keepRelSet
+) {
+  if (!(Test-Path $pdfPath)) { throw "Cleanup requested but PDF not found: $pdfPath" }
+
+  $keepRelSet = Convert-ToStringHashSet $keepRelSet
+
+  Cleanup-OutDirKeepPdf -outDir $outDir -pdfPath $pdfPath
+
+  $diffRoot = (Resolve-Path $diffDir).Path.TrimEnd('\')
+  $prefix = $diffRoot + '\'
+  $outPrefix = (Join-Path $diffDir "out") + '\'
+
+  Get-ChildItem -LiteralPath $diffDir -Force -Recurse -File | ForEach-Object {
+    if ($_.FullName.StartsWith($outPrefix, [System.StringComparison]::OrdinalIgnoreCase)) { return }
+
+    $full = $_.FullName
+    $rel = if ($full.StartsWith($prefix, [System.StringComparison]::OrdinalIgnoreCase)) {
+      $full.Substring($prefix.Length)
+    } else {
+      $_.Name
+    }
+    $relNorm = Normalize-RelPath $rel
+
+    if (-not $relNorm) {
+      Remove-Item -LiteralPath $full -Force
+      return
+    }
+
+    if (-not $keepRelSet.Contains($relNorm)) {
+      Remove-Item -LiteralPath $full -Force
+    }
+  }
+
+  Get-ChildItem -LiteralPath $diffDir -Force -Recurse -Directory |
+    Sort-Object FullName -Descending |
+    ForEach-Object {
+      if ($_.Name -ieq "out") { return }
+      if (-not (Get-ChildItem -LiteralPath $_.FullName -Force)) {
+        Remove-Item -LiteralPath $_.FullName -Force
+      }
+    }
 }
 
 # ---- main ----
@@ -390,6 +420,9 @@ try {
   if ($CleanupMode -eq "pdf+changed") {
     $keepSet = Get-ChangedPathsSafe -baseRef $BaseRef -headRef $HeadRef -compareWorktree ([bool]$CompareWorktree)
     if ($null -eq $keepSet) { $keepSet = New-StringHashSet }
+
+    # ★ keep only "compile-related" changed files (docs/tables/images/references/.bib etc.)
+    $keepSet = Filter-CompileRelatedChangedSet -set $keepSet -rootTexRel $RootTex
   }
 
   # For reviewer-friendly summary inside the diff PDF
@@ -441,7 +474,6 @@ try {
       if ($LASTEXITCODE -ne 0) { throw "latexpand failed (head)" }
     } finally { Pop-Location | Out-Null }
 
-    # Optionally show input-file boundaries inside the final PDF (useful for split files under documents/, tables/, etc.)
     Apply-InputBoundaryMarkers -flatTexPath $BaseFlat -scope $InputBoundaries
     Apply-InputBoundaryMarkers -flatTexPath $HeadFlat -scope $InputBoundaries
   } else {
@@ -460,7 +492,6 @@ try {
   $ldArgs = @("--encoding=utf8", "--math-markup=$MathMarkup", "--graphics-markup=$GraphicsMarkup")
   if ($preamble) { $ldArgs += "--preamble=$preamble" }
 
-  # Citation markup can break with underline styles; auto-disable there.
   if ($DisableCitationMarkup -eq "on") { $ldArgs += "--disable-citation-markup" }
   elseif ($DisableCitationMarkup -eq "auto" -and $Style -like "*underline*") { $ldArgs += "--disable-citation-markup" }
 
@@ -468,7 +499,6 @@ try {
   if ($LASTEXITCODE -ne 0) { throw "latexdiff failed" }
   Write-Host "Writing diff tex -> $diffTexPath"
 
-  # Insert a reviewer-friendly change summary near the beginning of the document
   Insert-ChangeSummaryIntoRootTex -rootTexPath $diffTexPath
 
   # ---- compile diff ----
@@ -511,8 +541,8 @@ try {
       Write-Host ("Cleanup(pdf-only) done: kept only {0}" -f $pdfPath)
     }
     elseif ($CleanupMode -eq "pdf+changed") {
-      Cleanup-DiffKeepPdfAndChanged -diffDir $DiffDir -outDir $outDir -pdfPath $pdfPath -keepRelSet $keepSet -rootTexRel $RootTex
-      Write-Host ("Cleanup(pdf+changed) done: kept {0} and changed files." -f $pdfPath)
+      Cleanup-DiffKeepPdfAndCompileChanged -diffDir $DiffDir -outDir $outDir -pdfPath $pdfPath -keepRelSet $keepSet
+      Write-Host ("Cleanup(pdf+changed) done: kept {0} and compile-related changed files." -f $pdfPath)
     }
     else {
       Write-Host "Cleanup skipped (CleanupMode=none)."
