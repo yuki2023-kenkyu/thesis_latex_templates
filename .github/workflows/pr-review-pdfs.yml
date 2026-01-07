@@ -80,7 +80,9 @@ jobs:
           : > diff/.changed_files.txt
           git diff --name-only "${BASE_SHA}" "${HEAD_SHA}" -- >> diff/.changed_files.txt || true
 
-          BASE_LABEL="${BASE_LABEL}" HEAD_LABEL="${HEAD_LABEL}" python3 - <<'PY'
+          BASE_LABEL="${BASE_LABEL}" HEAD_LABEL="${HEAD_LABEL}" 
+          
+          python3 - <<'PY'
 import os, re
 from pathlib import Path
 
