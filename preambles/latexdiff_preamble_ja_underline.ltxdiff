@@ -36,3 +36,12 @@
 \providecommand{\DIFaddendFL}{}
 \providecommand{\DIFdelbeginFL}{}
 \providecommand{\DIFdelendFL}{}
+
+% --- Optional: show source file boundaries (used when scripts post-process latexpand --explain output) ---
+% The scripts can convert lines like "% start input ./path/to/file.tex" into "\DIFinput{./path/to/file.tex}".
+\providecommand{\DIFinput}[1]{%
+  \par\noindent\begingroup
+  \ttfamily\footnotesize
+  \fbox{\strut file: #1}%
+  \endgroup\par\noindent
+}
