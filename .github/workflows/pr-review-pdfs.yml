@@ -18,10 +18,12 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Install latexdiff
+      # latexdiff-vc --flatten が latexpand を要求するため、texlive-extra-utils を入れる
+      - name: Install latexdiff + latexpand dependencies
         run: |
+          set -euxo pipefail
           sudo apt-get update
-          sudo apt-get install -y latexdiff
+          sudo apt-get install -y --no-install-recommends latexdiff texlive-extra-utils
 
       # 1) Build "normal" PDFs (for reviewers to compare with the diff PDF)
       - name: Compile LaTeX (LuaLaTeX + biber)
@@ -31,6 +33,8 @@ jobs:
             main.tex
             style_guide_updated.tex
           latexmk_use_lualatex: true
+          # latexmkrc 等で outdir を変えていても、ここで上書きして PDF を確実にリポジトリ直下へ
+          args: -interaction=nonstopmode -file-line-error -halt-on-error -outdir=.
 
       - name: Upload built PDFs
         uses: actions/upload-artifact@v4
@@ -43,19 +47,25 @@ jobs:
       # 2) Generate and build the diff PDF
       - name: Generate diff TeX (base vs head)
         run: |
+          set -euxo pipefail
           BASE_SHA="${{ github.event.pull_request.base.sha }}"
           HEAD_SHA="${{ github.event.pull_request.head.sha }}"
           rm -rf diff
+
           # Japanese-friendly, robust default style: color-only (no ulem)
           latexdiff-vc \
+            --git --force --flatten \
             --encoding=utf8 \
             --math-markup=coarse \
             --graphics-markup=new-only \
             --preamble=preambles/latexdiff_preamble_ja_color.ltxdiff \
-            --git --flatten --force -d diff -r "${BASE_SHA}" -r "${HEAD_SHA}" main.tex
-          
+            -d diff \
+            -r "${BASE_SHA}" -r "${HEAD_SHA}" \
+            main.tex
+
       - name: Add change summary into diff TeX
         run: |
+          set -euxo pipefail
           BASE_SHA="${{ github.event.pull_request.base.sha }}"
           HEAD_SHA="${{ github.event.pull_request.head.sha }}"
           BASE_REF="${{ github.event.pull_request.base.ref }}"
@@ -64,7 +74,11 @@ jobs:
           HEAD_SHORT="$(echo "${HEAD_SHA}" | cut -c1-7)"
           BASE_LABEL="${BASE_REF}@${BASE_SHORT}"
           HEAD_LABEL="${HEAD_REF}@${HEAD_SHORT}"
-          git diff --name-only "${BASE_SHA}" "${HEAD_SHA}" -- > diff/.changed_files.txt || true
+
+          # git diff が失敗してもファイル自体は必ず存在させる（python 側で read できるように）
+          mkdir -p diff
+          : > diff/.changed_files.txt
+          git diff --name-only "${BASE_SHA}" "${HEAD_SHA}" -- >> diff/.changed_files.txt || true
 
           BASE_LABEL="${BASE_LABEL}" HEAD_LABEL="${HEAD_LABEL}" python3 - <<'PY'
 import os, re
@@ -79,7 +93,9 @@ def esc(s: str) -> str:
 
 base_label = os.environ.get("BASE_LABEL", "")
 head_label = os.environ.get("HEAD_LABEL", "")
-changed = [l.strip() for l in Path("diff/.changed_files.txt").read_text(encoding="utf-8", errors="ignore").splitlines() if l.strip()]
+
+changed_path = Path("diff/.changed_files.txt")
+changed = [l.strip() for l in changed_path.read_text(encoding="utf-8", errors="ignore").splitlines() if l.strip()]
 
 seen = set()
 uniq = []
@@ -125,7 +141,9 @@ add_group("Bibliography / styles", bib)
 add_group("Images / figures", img)
 add_group("Other files", other)
 if not (tex or bib or img or other):
-    lines.append(r"  \item (No changed files detected by git diff)")
+    # itemize が空だと LaTeX が「missing \item」で落ちるので必ず 1 個入れる
+    lines.append(r"  \item \textit{(No changed files detected by git diff.)}")
+
 lines.append(r"\end{itemize}")
 lines.append(r"\endgroup")
 lines.append("")
@@ -134,20 +152,28 @@ Path("diff/change_summary.tex").write_text("\n".join(lines), encoding="utf-8")
 
 root = Path("diff/main.tex")
 tex_src = root.read_text(encoding="utf-8", errors="ignore")
+
+# 二重挿入防止
+if re.search(r"\\input\{change_summary\.tex\}", tex_src):
+    root.write_text(tex_src, encoding="utf-8")
+    raise SystemExit(0)
+
 m = re.search(r"\\begin\{document\}", tex_src)
 if not m:
     raise SystemExit("Could not find \\\\begin{document} in diff/main.tex")
+
 ins = "\\input{change_summary.tex}\n\\clearpage\n"
 tex_out = tex_src[:m.end()] + "\n" + ins + tex_src[m.end():]
 root.write_text(tex_out, encoding="utf-8")
 PY
 
-
       - name: Compile diff TeX (LuaLaTeX + biber)
         uses: xu-cheng/latex-action@v4
         with:
-          root_file: diff/main.tex
+          working_directory: diff
+          root_file: main.tex
           latexmk_use_lualatex: true
+          args: -interaction=nonstopmode -file-line-error -halt-on-error -outdir=.
 
       - name: Upload diff PDF
         uses: actions/upload-artifact@v4
