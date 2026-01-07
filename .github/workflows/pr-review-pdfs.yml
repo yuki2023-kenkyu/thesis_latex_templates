@@ -20,6 +20,7 @@ jobs:
 
       # latexdiff-vc --flatten が latexpand を要求するため、texlive-extra-utils を入れる
       - name: Install latexdiff + latexpand dependencies
+        shell: bash
         run: |
           set -euxo pipefail
           sudo apt-get update
@@ -46,6 +47,7 @@ jobs:
 
       # 2) Generate and build the diff PDF
       - name: Generate diff TeX (base vs head)
+        shell: bash
         run: |
           set -euxo pipefail
           BASE_SHA="${{ github.event.pull_request.base.sha }}"
@@ -64,26 +66,31 @@ jobs:
             main.tex
 
       - name: Add change summary into diff TeX
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
         run: |
           set -euxo pipefail
-          BASE_SHA="${{ github.event.pull_request.base.sha }}"
-          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
-          BASE_REF="${{ github.event.pull_request.base.ref }}"
-          HEAD_REF="${{ github.event.pull_request.head.ref }}"
+
           BASE_SHORT="$(echo "${BASE_SHA}" | cut -c1-7)"
           HEAD_SHORT="$(echo "${HEAD_SHA}" | cut -c1-7)"
           BASE_LABEL="${BASE_REF}@${BASE_SHORT}"
           HEAD_LABEL="${HEAD_REF}@${HEAD_SHORT}"
 
-          # git diff が失敗してもファイル自体は必ず存在させる（python 側で read できるように）
           mkdir -p diff
           : > diff/.changed_files.txt
           git diff --name-only "${BASE_SHA}" "${HEAD_SHA}" -- >> diff/.changed_files.txt || true
 
-          BASE_LABEL="${BASE_LABEL}" HEAD_LABEL="${HEAD_LABEL}" 
-          
+          # 環境変数として Python に渡す（単独行にしない）
+          export BASE_LABEL
+          export HEAD_LABEL
+
           python3 - <<'PY'
-import os, re
+import os
+import re
 from pathlib import Path
 
 def esc(s: str) -> str:
@@ -97,7 +104,13 @@ base_label = os.environ.get("BASE_LABEL", "")
 head_label = os.environ.get("HEAD_LABEL", "")
 
 changed_path = Path("diff/.changed_files.txt")
-changed = [l.strip() for l in changed_path.read_text(encoding="utf-8", errors="ignore").splitlines() if l.strip()]
+changed = []
+if changed_path.exists():
+    changed = [
+        l.strip()
+        for l in changed_path.read_text(encoding="utf-8", errors="ignore").splitlines()
+        if l.strip()
+    ]
 
 seen = set()
 uniq = []
@@ -143,7 +156,6 @@ add_group("Bibliography / styles", bib)
 add_group("Images / figures", img)
 add_group("Other files", other)
 if not (tex or bib or img or other):
-    # itemize が空だと LaTeX が「missing \item」で落ちるので必ず 1 個入れる
     lines.append(r"  \item \textit{(No changed files detected by git diff.)}")
 
 lines.append(r"\end{itemize}")
@@ -157,7 +169,6 @@ tex_src = root.read_text(encoding="utf-8", errors="ignore")
 
 # 二重挿入防止
 if re.search(r"\\input\{change_summary\.tex\}", tex_src):
-    root.write_text(tex_src, encoding="utf-8")
     raise SystemExit(0)
 
 m = re.search(r"\\begin\{document\}", tex_src)
