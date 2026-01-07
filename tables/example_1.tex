@@ -1,0 +1,18 @@
+\begin{talltblr}[
+    caption={Example Table 1},
+    label={tb:example_1},
+    ]{
+    width = { \linewidth },
+    colspec = {X[c] X[c] X[c] X[c]}, % 列指定（Xは幅自動調整、cは中央揃え）
+    % 二重罫線の設定
+    hline{1} = {1}{-}{},  % 2重罫線
+    hline{1} = {2}{-}{},  % 2重罫線
+    hline{2} = {1}{-}{0.5pt},
+    hline{Z} = {1}{-}{},  % 2重罫線
+    hline{Z} = {2}{-}{},  % 2重罫線
+    % vlines
+    }
+    Alpha & Beta & Gamma & Delta \\
+    Epsilon & Zeta & Eta & Theta \\
+    Iota & Kappa & Lambda & Mu \\
+\end{talltblr}
