@@ -26,4 +26,3 @@ jobs:
           name: pdf
           path: |
             main.pdf
-            style_guide_updated.pdf
