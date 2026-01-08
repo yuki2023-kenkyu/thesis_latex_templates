@@ -1,18 +1,18 @@
-## Summary
+## 概要
 
-- What changed?
-- Why?
+- 変更内容（何を変更したか）
+- 変更理由（なぜ変更したか）
 
-## Reviewer notes
+## レビュアー向け注記
 
-- If the repository workflow is enabled, a bot comment titled **"Review PDFs (auto-generated)"** should appear on this PR with links to:
-  - `pr-pdf` (built PDFs)
-  - `pr-diff-pdf` (latexdiff PDF)
-- If the PR comes from a fork, the comment may not be posted due to GitHub token permissions.
+- リポジトリのワークフローが有効であれば、このPRに **「Review PDFs (auto-generated)」** というタイトルのボットコメントが投稿され、以下のアーティファクトへのリンクが表示されます。
+  - `pr-pdf`（通常ビルドしたPDF）
+  - `pr-diff-pdf`（latexdiff による差分PDF）
+- PR がフォークリポジトリから作成されている場合、GitHub トークン権限の制約によりコメントが投稿されないことがあります。
 
-## Checklist
+## チェックリスト
 
-- [ ] Compiles locally (LuaLaTeX + biber)
-- [ ] Figures/tables look correct
-- [ ] References render correctly
-- [ ] (Optional) Diff PDF checked for unintended changes
+- [ ] ローカルでコンパイルできる（LuaLaTeX + biber）
+- [ ] 図・表の表示が正しい
+- [ ] 参考文献の表示が正しい
+- [ ] （任意）差分PDFを確認し、意図しない変更がないことを確認した
