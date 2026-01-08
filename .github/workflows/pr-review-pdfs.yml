@@ -14,24 +14,23 @@ jobs:
 
     steps:
       - name: Check out repository (full history for diff)
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      # GitHub公式の作法: setup-python を明示して Python を揃える
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.x"
-
-      # latexdiff-vc --flatten は latexpand を要求するため、texlive-extra-utils を入れる
+      # latexdiff-vc --flatten が latexpand を要求するため，texlive-extra-utils を入れる
       - name: Install latexdiff + latexpand dependencies
         run: |
           set -euxo pipefail
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends latexdiff texlive-extra-utils
 
-      # 1) Build "normal" PDFs（reviewer が diff と比較できるように）
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      # 1) Build "normal" PDFs (for reviewers to compare with the diff PDF)
       - name: Compile LaTeX (LuaLaTeX + biber)
         uses: xu-cheng/latex-action@v4
         with:
@@ -39,7 +38,7 @@ jobs:
             main.tex
             style_guide_updated.tex
           latexmk_use_lualatex: true
-          # latexmkrc 等で outdir を変えていても、ここで上書きして PDF を確実にリポジトリ直下へ
+          # latexmkrc 等で outdir を変えていても，ここで上書きして PDF を確実にリポジトリ直下へ
           args: -interaction=nonstopmode -file-line-error -halt-on-error -outdir=.
 
       - name: Upload built PDFs
@@ -76,26 +75,30 @@ jobs:
           HEAD_SHA="${{ github.event.pull_request.head.sha }}"
           BASE_REF="${{ github.event.pull_request.base.ref }}"
           HEAD_REF="${{ github.event.pull_request.head.ref }}"
-
           BASE_SHORT="$(echo "${BASE_SHA}" | cut -c1-7)"
           HEAD_SHORT="$(echo "${HEAD_SHA}" | cut -c1-7)"
+
           export BASE_LABEL="${BASE_REF}@${BASE_SHORT}"
           export HEAD_LABEL="${HEAD_REF}@${HEAD_SHORT}"
 
-          # python 側で必ず読めるようにファイルを作る（diff 生成後なので diff/ は存在している想定）
+          # git diff が失敗してもファイル自体は必ず存在させる（python 側で read できるように）
+          mkdir -p diff
           : > diff/.changed_files.txt
-          git diff --name-only "${BASE_SHA}" "${HEAD_SHA}" -- > diff/.changed_files.txt || true
+          git diff --name-only "${BASE_SHA}" "${HEAD_SHA}" -- >> diff/.changed_files.txt || true
 
           python3 - <<'PY'
-          import os, re
+          import os
+          import re
           from pathlib import Path
+
 
           def esc(s: str) -> str:
               s = s.replace("\\", "/")
-              s = re.sub(r'([#\$%&_{}])', r'\\\1', s)
+              s = re.sub(r"([#\$%&_{}])", r"\\\1", s)
               s = s.replace("^", r"\textasciicircum{}")
               s = s.replace("~", r"\textasciitilde{}")
               return s
+
 
           base_label = os.environ.get("BASE_LABEL", "")
           head_label = os.environ.get("HEAD_LABEL", "")
@@ -107,7 +110,7 @@ jobs:
               if l.strip()
           ]
 
-          # unique (case-insensitive), keep order
+          # unique (case-insensitive) while keeping order
           seen = set()
           uniq = []
           for p in changed:
@@ -138,6 +141,7 @@ jobs:
           lines.append(r"\noindent\textbf{Changed files (grouped):}")
           lines.append(r"\begin{itemize}")
 
+
           def add_group(title, items):
               if not items:
                   return
@@ -147,13 +151,13 @@ jobs:
                   lines.append(r"    \item \texttt{" + esc(it) + "}")
               lines.append(r"  \end{itemize}")
 
+
           add_group("TeX sources", tex)
           add_group("Bibliography / styles", bib)
           add_group("Images / figures", img)
           add_group("Other files", other)
-
-          # itemize が空だと LaTeX が missing \item で落ちるので必ず1個入れる
           if not (tex or bib or img or other):
+              # itemize が空だと LaTeX が「missing \item」で落ちるので必ず 1 個入れる
               lines.append(r"  \item \textit{(No changed files detected by git diff.)}")
 
           lines.append(r"\end{itemize}")
@@ -166,7 +170,8 @@ jobs:
           tex_src = root.read_text(encoding="utf-8", errors="ignore")
 
           # 二重挿入防止
-          if re.search(r"\\input\{change_summary\.tex\}", tex_src):
+          if re.search(r"\\input\{change_summary\\.tex\}", tex_src):
+              root.write_text(tex_src, encoding="utf-8")
               raise SystemExit(0)
 
           m = re.search(r"\\begin\{document\}", tex_src)
@@ -174,7 +179,7 @@ jobs:
               raise SystemExit("Could not find \\\\begin{document} in diff/main.tex")
 
           ins = "\\input{change_summary.tex}\n\\clearpage\n"
-          tex_out = tex_src[:m.end()] + "\n" + ins + tex_src[m.end():]
+          tex_out = tex_src[: m.end()] + "\n" + ins + tex_src[m.end() :]
           root.write_text(tex_out, encoding="utf-8")
           PY
 
