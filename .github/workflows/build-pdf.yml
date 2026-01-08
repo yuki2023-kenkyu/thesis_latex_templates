@@ -2,12 +2,16 @@ name: Build PDFs
 
 on:
   push:
-    branches: [ main ]
-  # PR builds are handled by .github/workflows/pr-review-pdfs.yml (which also posts links)
+    branches:
+      - main
+
+permissions:
+  contents: read
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -19,6 +23,8 @@ jobs:
             main.tex
             style_guide_updated.tex
           latexmk_use_lualatex: true
+          # latexmkrc 等で outdir を変えていても、ここで上書きして PDF を確実にリポジトリ直下へ
+          args: -interaction=nonstopmode -file-line-error -halt-on-error -outdir=.
 
       - name: Upload PDFs
         uses: actions/upload-artifact@v4
@@ -26,3 +32,4 @@ jobs:
           name: pdf
           path: |
             main.pdf
+            style_guide_updated.pdf
