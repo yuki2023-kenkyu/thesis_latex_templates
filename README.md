@@ -9,17 +9,17 @@
 - **bxjsreport_test.cls**：元のbxjsreportクラスファイル．
 - **biblatex.cfg**：参考文献の出力形式を制御するbiblatex用の設定ファイル．
 - **.vscode/**：vscodeの設定ファイルをまとめたディレクトリ．
-  - **settings.json**：`thesis_template`内で適応される$\LaTeX$のコンパイルレシピ等の設定を記述した設定ファイル．
+  - **settings.json**：`thesis_template`内で適用される$\LaTeX$のコンパイルレシピ等の設定を記述した設定ファイル．
   - **extensions.json**：本パッケージを実行する上でインストールを推奨するvscodeの拡張機能をまとめた設定ファイル．
 - **preambles/**：プリアンブル設定をまとめたディレクトリ．
   - **packages_lualatex.sty**：パッケージやコマンドの定義が含まれるスタイルファイル．
   - **macros.sty**：コマンド定義（自作マクロ）が含まれるスタイルファイル．
   - **biblatex-journal-style.sty**：ADSのbibtexファイルの独自コマンドを使えるよう定義したスタイルファイル．
   - **zref-settings.sty**：zref-cleverパッケージに関する設定用のスタイルファイル．
-- **documents/**：各章の内容を含むディレクトリ。任意の本文ファイルを含む．
+- **documents/**：各章の内容を含むディレクトリ．任意の本文ファイルを含む．
 - **images/**：図表を保存するディレクトリ．
 - **references/**：参考文献リストを含むディレクトリ．
-  - **references_1.bib**
+  - **reference_1.bib**
 - **source_codes/**：付録のソースコードを含むディレクトリ．
   - **source_code_1.py**：付録に出力するソースコードの元ファイル．
 
@@ -67,7 +67,7 @@
   - `./references/`ディレクトリの`reference_1.bib`にBibTeX形式で文献情報を追加します．
   - 本文中で`\cite{your_reference_key}`を使用して引用します．
   - 日本語文献の情報を挿入する場合，`reference_1.bib`に追加した文献情報フィールドの最後に`langid = {japanese}`を追記してください．また，authorフィールドは必ず`author = {姓, 名}`としてください．
-  - 新たに`.bib`ファイルを追加する際は`./references/`内に追加し，`./preambles/packages_lualatex.sty`の`\addbibresource{./references/reference_1.bib}`のすぐ下に`\addbibresoiurce{./references/追加したファイルの名前.bib}`と追記してください．
+- 新たに`.bib`ファイルを追加する際は`./references/`内に追加し，`main.tex`（必要に応じて `style_guide_updated.tex`）の`\addbibresource{...}`の近くに，`\addbibresource{./references/追加したファイル名.bib}`を追記してください．
 
 ### 4. プリアンブルのカスタマイズ
 
@@ -157,6 +157,97 @@ TeX原稿（特に日本語）では、`ulem` による **下線/打消し（UND
 - `LTXDIFF_MATH_MARKUP`（既定: `coarse`）: 数式差分が壊れる場合は `whole` や `off` を検討
 - `LTXDIFF_GRAPHICS_MARKUP`（既定: `new-only`）: 図の強調が原因でエラーが出る場合は `none`
 - `LTXDIFF_DISABLE_CITATION_MARKUP`（既定: `auto`）: UNDERLINE系のときに `\mbox` 保護を抑制
+
+## PRの作成・レビュー手順（差分PDF自動生成）
+
+本リポジトリでは，Pull Request（PR）作成時に GitHub Actions が **通常PDF** と **差分PDF（latexdiff）** を自動生成し，PR上でレビューできるようにしています．基本的には以下のフローで運用してください．
+
+### 0. 前提（重要）
+
+- **PRは原則「同一リポジトリ内ブランチ」から作成**してください（fork PR の場合，GitHub の権限制約により PR コメント投稿が無効になることがあります）．
+- 追加・更新した **図（images/）・表（tables/）・参考文献（references/）等は必ずコミット**してください（Actions 側はリポジトリの内容だけでビルドします）．
+- ソースの文字コードは **UTF-8** を前提とします（`.bib` も含む）．
+
+### 1. ブランチ作成（作業開始）
+
+1) main を最新化：
+- `git switch main`
+- `git pull`
+
+2) 作業ブランチ作成（例）：
+- `git switch -c feature/<内容が分かる名前>`
+
+3) 編集（`documents/` 配下の章ファイル，`images/`，`tables/`，`references/` など）
+
+### 2. ローカルでの事前確認（推奨）
+
+レビューでの手戻りを減らすため，PRを出す前にローカルで最低限の確認を行ってください．
+
+- VSCode：`レシピ:lualatex (biblatex+biber)` で `main.tex` が通ること
+- 参考文献：`\cite{...}` が `biber` で解決できること（`biber` エラーがないこと）
+- 図表：パスが正しく，意図した見た目であること
+
+さらに，差分確認が必要な場合はローカルで差分PDFも生成できます．
+
+- macOS/Linux: `./scripts/make_diff.sh`
+- Windows(PowerShell): `./scripts/make_diff.ps1`
+
+（例：直近2コミット間の差分）
+- macOS/Linux: `./scripts/make_diff.sh main.tex HEAD~1 HEAD`
+- Windows: `powershell -ExecutionPolicy Bypass -File .\scripts\make_diff.ps1 -RootTex main.tex -BaseRef HEAD~1 -HeadRef HEAD`
+
+### 3. PRの作成
+
+1) 変更をコミット：
+- `git add -A`
+- `git commit -m "（変更内容が分かるメッセージ）"`
+
+2) ブランチを push：
+- `git push -u origin feature/<内容が分かる名前>`
+
+3) GitHub上で PR を作成し，PRテンプレート（Summary/Checklist など）を記入します．
+可能であれば以下も書いてください．
+- 何を変えたか（What changed）
+- なぜ変えたか（Why）
+- レビュー時に見てほしい観点（図表・参考文献・レイアウト等）
+
+### 4. GitHub Actions / Artifacts の確認（ここがレビューの要点）
+
+PR を作成すると，次のワークフローが走ります．
+
+- **PR Review PDFs (build + latexdiff)**（`.github/workflows/pr-review-pdfs.yml`）
+
+成功すると，Artifacts として次が生成されます．
+
+- `pr-pdf`：通常ビルドPDF（例：`main.pdf`，`style_guide_updated.pdf`）
+- `pr-diff-pdf`：差分PDF（latexdiff）
+
+また，同一リポジトリ内ブランチの PR であれば，PR本文にボットコメントとして
+**"Review PDFs (auto-generated)"** が投稿（または更新）され，Artifacts へのリンクが提示されます．
+
+#### ボットコメントが出ない場合
+
+- PR が **fork からの作成**：権限上，コメント投稿が無効になることがあります．（Artifacts 自体は Actions 画面から取得可能です）
+- Actions が失敗している：PR の **Checks** タブや Actions のログを確認してください．
+
+### 5. レビュー対応（更新の流れ）
+
+レビューコメントや差分PDFの確認結果に応じて修正し，作業ブランチに追加コミットして push します．
+push すると Actions が再実行され，Artifacts とボットコメントは自動更新されます．
+
+### 6. よくある失敗と対処（Actions/latexdiff）
+
+- **LaTeXコンパイルエラー**：まずログ（Actions のログ，またはローカルの `out/*.log` / `diff/out/*.log`）でエラー箇所を特定してください．
+- **biberエラー**：`.bib` の文字コード（UTF-8），エントリキーの重複，必須フィールド不足を確認してください．
+- **latexdiffで崩れる/落ちる**：
+  - 日本語では下線系（`ulem`）が不安定になりがちです．本リポジトリの既定は **`ja-color`（色のみ）** です．
+  - 数式差分が壊れる場合：`MathMarkup` を `fine`→`coarse` 等に変更して再生成してください（ローカルスクリプトで検証推奨）．
+- **minted等で `-shell-escape` が必要**：VSCode のレシピを `shell-escape` 付きに切り替えるか，ローカルで該当オプションを付けてください．
+
+### 7. 生成物をコミットしない（推奨）
+
+ローカルビルドや差分生成で作られる `out/`，`diff/` などは原則コミットしない運用を推奨します．
+（`.gitignore` で除外しています）
 
 ### GitHub Actions（PRごとに自動生成）
 
