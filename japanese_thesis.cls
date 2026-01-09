@@ -68,12 +68,22 @@
 % タイトル情報
 \newcommand{\Title}[1]{\gdef\Titlebox{#1}}
 \newcommand{\@Title}{\@ifundefined{Titlebox}{{What title is this ?}}{\Titlebox}}
-% 学籍番号
-\newcommand{\StudentNumber}[1]{\gdef\StudentNumberbox{学籍番号：#1}}
+% 学籍番号（表示用＋中身のみの両方を保持）
+\newcommand{\StudentNumber}[1]{%
+  \gdef\StudentNumberRawbox{#1}%
+  \gdef\StudentNumberbox{学籍番号：#1}%
+}
 \newcommand{\@StudentNumber}{\@ifundefined{StudentNumberbox}{{Who are you ?}}{\StudentNumberbox}}
-% 氏名
-\newcommand{\Author}[1]{\gdef\Authorbox{氏\hspace{2\zw}名：#1}}
+\newcommand{\@StudentNumberRaw}{\@ifundefined{StudentNumberRawbox}{{Who are you ?}}{\StudentNumberRawbox}}
+
+% 氏名（表示用＋中身のみの両方を保持）
+\newcommand{\Author}[1]{%
+  \gdef\AuthorRawbox{#1}%
+  \gdef\Authorbox{氏\hspace{2\zw}名：#1}%
+}
 \newcommand{\@Author}{\@ifundefined{Authorbox}{{Who are you ?}}{\Authorbox}}
+\newcommand{\@AuthorRaw}{\@ifundefined{AuthorRawbox}{{Who are you ?}}{\AuthorRawbox}}
+
 % 指導教員
 \newcommand{\Professor}[1]{\gdef\Professorbox{指導教員：#1}}
 \newcommand{\@Professor}{\@ifundefined{Professorbox}{{Who are you ?}}{\Professorbox}}
@@ -90,12 +100,39 @@
     \renewcommand{\ThesisType}{修士論文}
     \booltrue{isMasterThesis}
     \boolfalse{isDoctoralThesis}
+    \ShowProfessorOnCover       % 既に入れている想定
+    \ShowStudentNumberOnCover   % 追加：修士では学籍番号を表示
+    \ShowAuthorLabelOnCover     % 追加：修士では「氏名：」を表示
 }
 \newcommand{\SetDoctoralThesis}{
     \renewcommand{\ThesisType}{博士論文}
     \boolfalse{isMasterThesis}
     \booltrue{isDoctoralThesis}
+    \HideProfessorOnCover       % 既に入れている想定
+    \HideStudentNumberOnCover   % 追加：博士では学籍番号を非表示
+    \HideAuthorLabelOnCover     % 追加：博士では「氏名：」を非表示
 }
+
+% === Cover: student number line switch (default: show) ===
+\newif\ifjt@shownumber
+\jt@shownumbertrue
+\newcommand{\ShowStudentNumberOnCover}{\jt@shownumbertrue}
+\newcommand{\HideStudentNumberOnCover}{\jt@shownumberfalse}
+
+% === Cover: author label switch (default: show) ===
+% true: 「氏名：」付き（\@Author）を出す / false: 名前だけ（\@AuthorRaw）を出す
+\newif\ifjt@showauthorlabel
+\jt@showauthorlabeltrue
+\newcommand{\ShowAuthorLabelOnCover}{\jt@showauthorlabeltrue}
+\newcommand{\HideAuthorLabelOnCover}{\jt@showauthorlabelfalse}
+
+% === Cover: professor(advisor) line switch (default: show) ===
+\newif\ifjt@showprofessor
+\jt@showprofessortrue
+
+% 博士/修士/卒論の切替で確実に復帰できるよう、明示コマンドも用意（任意）
+\newcommand{\ShowProfessorOnCover}{\jt@showprofessortrue}
+\newcommand{\HideProfessorOnCover}{\jt@showprofessorfalse}
 
 \makeatother
 
@@ -149,14 +186,28 @@
         }\par
 
         \vspace{1cm}
-        % 学籍番号（太字）
-        {\huge \kintou{7\zw}{\textbf{\@StudentNumber}}}\par
+        % 学籍番号（博士論文では非表示。未設定の場合も出さない）
+        \ifjt@shownumber
+          \@ifundefined{StudentNumberbox}{}{%
+            {\huge \kintou{7\zw}{\textbf{\@StudentNumber}}}\par
+            \vspace{0.5cm}
+          }%
+        \fi
+
+        % 氏名（博士論文では「氏名：」無し＝名前のみ。それ以外は従来通り）
+        \ifjt@showauthorlabel
+          {\huge \kintou{7\zw}{\textbf{\@Author}}}\par
+        \else
+          {\huge \kintou{7\zw}{\textbf{\@AuthorRaw}}}\par
+        \fi
         \vspace{0.5cm}
-        % 氏名（太字）
-        {\huge \kintou{7\zw}{\textbf{\@Author}}}\par
-        \vspace{0.5cm}
-        % 指導教員
-        {\huge \kintou{7\zw}{\@Professor}}\par
+
+        % 指導教員（博士論文では非表示。未設定の場合も出さない）
+        \ifjt@showprofessor
+          \@ifundefined{Professorbox}{}{%
+            {\huge \kintou{7\zw}{\@Professor}}\par
+          }%
+        \fi
         \vspace{2.5cm}
         % 年度
         {\LARGE \kintou{11\zw}{\@DateofSubmission}}\par
