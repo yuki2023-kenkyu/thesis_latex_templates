@@ -230,6 +230,8 @@
 \renewcommand{\figurename}{Fig.}
 \renewcommand{\tablename}{Table}
 
+\renewcommand{\thefigure}{\arabic{figure}}
+\renewcommand{\thetable}{\Roman{table}}
 %====================================================================
 % 9. ページスタイルや段落設定のカスタマイズ
 %====================================================================
