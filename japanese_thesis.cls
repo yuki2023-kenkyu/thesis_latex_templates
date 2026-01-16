@@ -229,9 +229,13 @@
 \renewcommand{\indexname}{索 引}
 \renewcommand{\figurename}{Fig.}
 \renewcommand{\tablename}{Table}
-
+% 表番号，図番号の表示スタイル
+\counterwithout{figure}{chapter}
+\counterwithout{table}{chapter}
 \renewcommand{\thefigure}{\arabic{figure}}
 \renewcommand{\thetable}{\Roman{table}}
+% \counterwithin{figure}{section}
+
 %====================================================================
 % 9. ページスタイルや段落設定のカスタマイズ
 %====================================================================
