@@ -61,10 +61,8 @@
   "latex-workshop.latex.outDir": "out",
   "latex-workshop.latex.clean.method": "glob",
   "latex-workshop.latex.recipe.default": "first",
-
   "latex-workshop.latex.autoBuild.run": "onSave",
   "latex-workshop.latex.autoClean.run": "onBuilt",
-
   "latex-workshop.latex.tools": [
     {
       "name": "lualatex",
@@ -105,7 +103,6 @@
       ]
     }
   ],
-
   "latex-workshop.latex.recipes": [
     {
       "name": "lualatex (biblatex+biber)",
@@ -126,7 +123,6 @@
       ]
     }
   ],
-
   "latex-workshop.latex.clean.fileTypes": [
     "%DOCFILE%.aux",
     "%DOCFILE%.bbl",
@@ -135,10 +131,12 @@
     "%DOCFILE%.fdb_latexmk",
     "%DOCFILE%.fls",
     "%DOCFILE%.lof",
+    "%DOCFILE%.loc",
     "%DOCFILE%.log",
     "%DOCFILE%.lot",
     "%DOCFILE%.out",
     "%DOCFILE%.run.xml",
+    "%DOCFILE%.soc",
     "%DOCFILE%.toc",
     "%DOCFILE%.synctex.gz",
     "*.nav",
@@ -147,7 +145,6 @@
     "_minted-*/**",
     "_minted-*/"
   ],
-
   "latex-workshop.view.pdf.viewer": "tab",
   "latex-workshop.synctex.afterBuild.enabled": true,
   "[tex]": {
