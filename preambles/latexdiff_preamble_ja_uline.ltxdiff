@@ -18,8 +18,9 @@
 \RequirePackage{color}\definecolor{RED}{rgb}{1,0,0}\definecolor{BLUE}{rgb}{0,0,1} %DIF PREAMBLE
 \RequirePackage[usetype1]{uline--} %DIF PREAMBLE
 \providecommand{\texorpdfstring}[2]{#1}% safe fallback if hyperref not loaded %DIF PREAMBLE
-\providecommand{\DIFadd}[1]{\texorpdfstring{{\protect\color{blue}\uwave{#1}}}{#1}} %DIF PREAMBLE
-\providecommand{\DIFdel}[1]{\texorpdfstring{{\protect\color{red}\mline{#1}}}{#1}} %DIF PREAMBLE
+% Distinct edit markers for readability (add/delete).
+\providecommand{\DIFadd}[1]{\texorpdfstring{{\protect\color{blue}\textbf{[+]\,}\uwave{#1}}}{#1}} %DIF PREAMBLE
+\providecommand{\DIFdel}[1]{\texorpdfstring{{\protect\color{red}\textbf{[-]\,}\mline{#1}}}{#1}} %DIF PREAMBLE
 \newcommand{\DIFaddbegin}{} %DIF PREAMBLE
 \newcommand{\DIFaddend}{} %DIF PREAMBLE
 \newcommand{\DIFdelbegin}{} %DIF PREAMBLE

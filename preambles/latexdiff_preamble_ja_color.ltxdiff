@@ -8,8 +8,10 @@
 \providecommand{\texorpdfstring}[2]{#1}
 
 % --- Inline markup (token-level) ---
-\providecommand{\DIFadd}[1]{\texorpdfstring{{\color{DIFaddcolor}#1}}{#1}}
-\providecommand{\DIFdel}[1]{\texorpdfstring{{\color{DIFdelcolor}#1}}{#1}}
+% Distinct edit markers for readability (add/delete).
+% (Replacement is shown as del+add by latexdiff.)
+\providecommand{\DIFadd}[1]{\texorpdfstring{{\color{DIFaddcolor}\textbf{[+]\,}#1}}{#1}}
+\providecommand{\DIFdel}[1]{\texorpdfstring{{\color{DIFdelcolor}\textbf{[-]\,}#1}}{#1}}
 
 % --- Block markup (paragraph-level, environments) ---
 \providecommand{\DIFaddbegin}{\begingroup\color{DIFaddcolor}}

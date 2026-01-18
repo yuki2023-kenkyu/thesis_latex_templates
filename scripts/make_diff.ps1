@@ -204,7 +204,15 @@ function Get-ChangedPathsList([string]$baseRef, [string]$headRef, [bool]$compare
   return $out
 }
 
-function Write-ChangeSummaryTex([string]$diffDir, [string[]]$changedPaths, [string]$baseLabel, [string]$headLabel) {
+function Write-ChangeSummaryTex(
+  [string]$diffDir,
+  [string[]]$changedPaths,
+  [string]$baseLabel,
+  [string]$headLabel,
+  [string]$baseRef,
+  [string]$headRef,
+  [bool]$compareWorktree
+) {
   $dst = Join-Path $diffDir "change_summary.tex"
 
   $texChanged   = @()
@@ -261,6 +269,69 @@ function Write-ChangeSummaryTex([string]$diffDir, [string[]]$changedPaths, [stri
   }
 
   $lines.Add("\end{itemize}") | Out-Null
+
+  # Contributor summary (git). Not available when comparing against the working tree.
+  if (-not $compareWorktree -and $baseRef -and $headRef) {
+    $lines.Add("\par\medskip") | Out-Null
+    $lines.Add("\noindent\textbf{Contributors (git log):}") | Out-Null
+    $lines.Add("\begin{itemize}") | Out-Null
+
+    $log = @()
+    try {
+      $log = & git log --name-only --pretty=format:"@@@%an\t%ae" "$baseRef..$headRef"
+    } catch {
+      $log = @()
+    }
+
+    $commits = @{}
+    $filesByAuthor = @{}
+    $cur = $null
+
+    foreach ($ln in $log) {
+      if ($ln -like "@@@*") {
+        $cur = $ln.Substring(3).Trim()
+        if (-not $commits.ContainsKey($cur)) {
+          $commits[$cur] = 0
+          $filesByAuthor[$cur] = New-Object 'System.Collections.Generic.HashSet[string]'
+        }
+        $commits[$cur] = [int]$commits[$cur] + 1
+        continue
+      }
+      $p = ($ln | ForEach-Object { $_.Trim() })
+      if ($p -and $cur) {
+        [void]$filesByAuthor[$cur].Add($p)
+      }
+    }
+
+    if ($commits.Count -eq 0) {
+      $lines.Add("  \item \textit{(No commits found in range.)}") | Out-Null
+    } else {
+      $ordered = $commits.GetEnumerator() | Sort-Object Value -Descending
+      foreach ($e in $ordered) {
+        $a = [string]$e.Key
+        $nCommits = [int]$e.Value
+        $fileSet = $filesByAuthor[$a]
+        $fileList = @($fileSet) | Sort-Object
+        $nFiles = $fileList.Count
+        $lines.Add("  \item \texttt{" + (Escape-LatexText $a) + "} (commits: $nCommits, files: $nFiles)") | Out-Null
+        if ($nFiles -gt 0) {
+          $lines.Add("  \begin{itemize}") | Out-Null
+          $maxShow = 30
+          $shown = $fileList | Select-Object -First $maxShow
+          foreach ($f in $shown) {
+            $lines.Add("    \item \texttt{" + (Escape-LatexText $f) + "}") | Out-Null
+          }
+          if ($nFiles -gt $maxShow) {
+            $lines.Add("    \item \textit{... + " + ($nFiles - $maxShow) + " more}") | Out-Null
+          }
+          $lines.Add("  \end{itemize}") | Out-Null
+        }
+      }
+    }
+
+    $lines.Add("\end{itemize}") | Out-Null
+  }
+
   $lines.Add("\endgroup") | Out-Null
   $lines.Add("") | Out-Null
 
@@ -413,6 +484,17 @@ try {
   Assert-Command "lualatex"
   Assert-Command "biber"
 
+  # Default BaseRef: prefer origin/main when available (common PR review base).
+  # Only apply this when the user did not explicitly pass -BaseRef.
+  if (-not $PSBoundParameters.ContainsKey('BaseRef')) {
+    try {
+      & git show-ref --verify --quiet refs/remotes/origin/main
+      if ($LASTEXITCODE -eq 0) { $BaseRef = "origin/main" }
+    } catch {
+      # ignore
+    }
+  }
+
   $HasLatexpand = Try-HasCommand "latexpand"
 
   # Compute keep-set early (before we overwrite diff/)
@@ -449,7 +531,7 @@ try {
 
   # Write change summary into diff/ so reviewers can see which split files changed
   $headLabel = if ($CompareWorktree) { "working tree" } else { $HeadRef }
-  Write-ChangeSummaryTex -diffDir $DiffDir -changedPaths $changedList -baseLabel $BaseRef -headLabel $headLabel | Out-Null
+  Write-ChangeSummaryTex -diffDir $DiffDir -changedPaths $changedList -baseLabel $BaseRef -headLabel $headLabel -baseRef $BaseRef -headRef $HeadRef -compareWorktree ([bool]$CompareWorktree) | Out-Null
 
   $BaseTex = Join-Path $TempBase $RootTex
   $HeadTex = Join-Path $TempHead $RootTex

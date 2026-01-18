@@ -18,8 +18,9 @@
 \providecommand{\texorpdfstring}[2]{#1}
 
 % --- Inline markup ---
-\providecommand{\DIFadd}[1]{\texorpdfstring{{\protect\color{DIFaddcolor}\uline{#1}}}{#1}}
-\providecommand{\DIFdel}[1]{\texorpdfstring{{\protect\color{DIFdelcolor}\sout{#1}}}{#1}}
+% Distinct edit markers for readability (add/delete).
+\providecommand{\DIFadd}[1]{\texorpdfstring{{\protect\color{DIFaddcolor}\textbf{[+]\,}\uline{#1}}}{#1}}
+\providecommand{\DIFdel}[1]{\texorpdfstring{{\protect\color{DIFdelcolor}\textbf{[-]\,}\sout{#1}}}{#1}}
 
 % --- Block markup ---
 \providecommand{\DIFaddbegin}{}

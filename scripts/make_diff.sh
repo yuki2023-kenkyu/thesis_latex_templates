@@ -2,7 +2,11 @@
 set -euo pipefail
 
 # Usage:
-#   ./scripts/make_diff.sh [ROOT_TEX=main.tex] [BASE_REF=HEAD~1] [HEAD_REF=HEAD]
+#   ./scripts/make_diff.sh [ROOT_TEX=main.tex] [BASE_REF] [HEAD_REF=HEAD]
+#
+# Default BASE_REF:
+#   - If refs/remotes/origin/main exists: origin/main
+#   - Otherwise: HEAD~1
 #
 # Optional environment variables (recommended defaults are shown):
 #   LTXDIFF_STYLE="ja-color"        # ja-color | ja-underline | ja-uline | cfont | underline
@@ -24,7 +28,11 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
 ROOT_TEX="${1:-main.tex}"
-BASE_REF="${2:-HEAD~1}"
+DEFAULT_BASE_REF="HEAD~1"
+if git show-ref --verify --quiet refs/remotes/origin/main; then
+  DEFAULT_BASE_REF="origin/main"
+fi
+BASE_REF="${2:-$DEFAULT_BASE_REF}"
 HEAD_REF="${3:-HEAD}"
 
 # If the user provided BASE_REF only (2 args total), compare BASE_REF vs working tree
@@ -97,10 +105,11 @@ else
   HEAD_LABEL="${HEAD_REF}"
 fi
 
-export BASE_REF HEAD_LABEL DIFF_ROOT_BASENAME
+export BASE_REF HEAD_REF HEAD_LABEL DIFF_ROOT_BASENAME COMPARE_WORKTREE
 
 python3 - <<'PY'
-import os, re
+import os, re, subprocess
+from collections import Counter, defaultdict
 from pathlib import Path
 
 def esc(s: str) -> str:
@@ -112,6 +121,8 @@ def esc(s: str) -> str:
 
 base_label = os.environ.get("BASE_REF", "")
 head_label = os.environ.get("HEAD_LABEL", "")
+head_ref = os.environ.get("HEAD_REF", "HEAD")
+compare_worktree = os.environ.get("COMPARE_WORKTREE", "false").lower() == "true"
 diff_root = os.environ["DIFF_ROOT_BASENAME"]
 
 changed = [l.strip() for l in Path("diff/.changed_files.txt").read_text(encoding="utf-8", errors="ignore").splitlines() if l.strip()]
@@ -161,6 +172,51 @@ add_group("Other files", other)
 if not (tex or bib or img or other):
     lines.append(r"  \item (No changed files detected by git diff)")
 lines.append(r"\end{itemize}")
+
+# Contributor summary (git). Not available when comparing against the working tree.
+if not compare_worktree:
+    try:
+        rng = f"{base_label}..{head_ref}"
+        log = subprocess.check_output(
+            ["git", "log", "--name-only", f"--pretty=format:@@@%an\t%ae", rng],
+            text=True,
+            errors="ignore",
+        )
+    except Exception:
+        log = ""
+
+    commits = Counter()
+    touched = defaultdict(set)
+    cur = None
+    for line in log.splitlines():
+        if line.startswith("@@@"):  # commit header
+            cur = line[3:].strip()
+            if cur:
+                commits[cur] += 1
+            continue
+        p = line.strip()
+        if cur and p:
+            touched[cur].add(p)
+
+    if commits:
+        lines.append(r"\par\medskip")
+        lines.append(r"\noindent\textbf{Contributors (git log):}")
+        lines.append(r"\begin{itemize}")
+
+        for author, n in commits.most_common():
+            files = sorted(touched.get(author, set()))
+            lines.append(r"  \item " + esc(author) + r" (commits: " + str(n) + r", files: " + str(len(files)) + r")")
+            if files:
+                lines.append(r"  \begin{itemize}")
+                max_files = 40
+                for f in files[:max_files]:
+                    lines.append(r"    \item \texttt{" + esc(f) + r"}")
+                if len(files) > max_files:
+                    lines.append(r"    \item \texttt{...}")
+                lines.append(r"  \end{itemize}")
+
+        lines.append(r"\end{itemize}")
+
 lines.append(r"\endgroup")
 lines.append("")
 
