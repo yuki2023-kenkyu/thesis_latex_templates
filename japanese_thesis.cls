@@ -45,6 +45,7 @@
 %====================================================================
 \LoadClassWithOptions{bxjsreport}
 
+
 %====================================================================
 % Review / draft support (changes + colored comments)
 %====================================================================
@@ -78,6 +79,26 @@
 %    - \Title, \Author, \StudentNumber など
 %====================================================================
 \makeatletter
+% -------------------------------------------------------------------
+% Public API (user-facing macros)
+%
+%  Metadata setters:
+%    \Title{...}\Author{...}\StudentNumber{...}\Professor{...}
+%    \University{...}\AffiliationLineA{...}\AffiliationLineB{...}
+%    \DateofSubmission{...}
+%
+%  Thesis type selectors (also set sensible cover defaults):
+%    \SetMasterThesis, \SetDoctoralThesis
+%
+%  Cover switches (independent; may be overridden after thesis type selection):
+%    \ShowStudentNumberOnCover / \HideStudentNumberOnCover
+%    \ShowAuthorLabelOnCover   / \HideAuthorLabelOnCover
+%    \ShowProfessorOnCover     / \HideProfessorOnCover
+%
+% Notes:
+%  - The internal implementation uses the jt@* namespace and should not be
+%    redefined in user documents unless you understand the implications.
+% -------------------------------------------------------------------
 
 % タイトル情報
 \newcommand{\Title}[1]{\gdef\Titlebox{#1}}
@@ -133,14 +154,28 @@
 \boolfalse{isMasterThesis}
 \boolfalse{isDoctoralThesis}
 \newcommand{\ThesisType}{卒業論文}
+
+% -------------------------------------------------------------------
+% Internal implementation details (jt@* namespace)
+%
+% Convention:
+%  - Any macro/length/flag whose name begins with jt@ is considered internal
+%    and may change without notice. User documents should rely only on the
+%    Public API listed above.
+% -------------------------------------------------------------------
+% Internal helper: set default affiliation for graduate theses.
+% (Keeps SetMasterThesis / SetDoctoralThesis DRY without changing behavior.)
+\newcommand{\jt@SetGraduateAffiliationDefaults}{%
+    \University{福島大学}%
+    \AffiliationLineA{大学院共生システム理工学研究科}%
+    \AffiliationLineB{共生システム理工学専攻}%
+}
 \newcommand{\SetMasterThesis}{
     \renewcommand{\ThesisType}{修士論文}
     \booltrue{isMasterThesis}
     \boolfalse{isDoctoralThesis}
     % Default affiliation for master thesis
-    \University{福島大学}
-    \AffiliationLineA{大学院共生システム理工学研究科}
-    \AffiliationLineB{共生システム理工学専攻}
+    \jt@SetGraduateAffiliationDefaults
     \ShowProfessorOnCover       % 既に入れている想定
     \ShowStudentNumberOnCover   % 追加：修士では学籍番号を表示
     \ShowAuthorLabelOnCover     % 追加：修士では「氏名：」を表示
@@ -150,9 +185,7 @@
     \boolfalse{isMasterThesis}
     \booltrue{isDoctoralThesis}
     % Default affiliation for doctoral thesis
-    \University{福島大学}
-    \AffiliationLineA{大学院共生システム理工学研究科}
-    \AffiliationLineB{共生システム理工学専攻}
+    \jt@SetGraduateAffiliationDefaults
     \HideProfessorOnCover       % 既に入れている想定
     \HideStudentNumberOnCover   % 追加：博士では学籍番号を非表示
     \HideAuthorLabelOnCover     % 追加：博士では「氏名：」を非表示
@@ -369,15 +402,14 @@
         \ifjt@hasprofline \jt@coveralignedtrue\fi
 
         \ifjt@coveraligned
-	          \jt@calclabelwidth
-	          \jt@calcvaluewidth
-	          \jt@setinfoblockwidth
+            \jt@calclabelwidth
+            \jt@calcvaluewidth
+            \jt@setinfoblockwidth
           {\huge\bfseries
             % Center the whole info block against the *current* line width.
             % Use \linewidth (not \textwidth) to be robust inside list-based
             % environments such as center/trivlist.
             \jt@centerinfoblock{\jt@cover@infoblockwidth}{%
-              \raggedright
               % Student number (optional)
               \ifjt@hasnumberline
                 \jt@coverline{\jt@label@studentnumber}{\@StudentNumberRaw}
