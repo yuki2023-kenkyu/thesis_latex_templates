@@ -65,6 +65,60 @@ function Try-HasCommand([string]$cmd) {
   try { Get-Command $cmd -ErrorAction Stop | Out-Null; return $true } catch { return $false }
 }
 
+
+
+# ---- git ref normalization / validation --------------------------------------
+# Common user mistake: pasting "origin/main, HEAD~1" into -BaseRef. Git treats that
+# as a single (invalid) revision. We auto-split ONLY when HeadRef is the default
+# "HEAD" and CompareWorktree is off; otherwise we fail fast with a helpful message.
+function Normalize-GitRefs([string]$baseRef, [string]$headRef, [bool]$compareWorktree) {
+  $b = if ($null -eq $baseRef) { "" } else { $baseRef }
+  $h = if ($null -eq $headRef) { "" } else { $headRef }
+  $b = $b.Trim()
+  $h = $h.Trim()
+
+  if ($b -match ',') {
+    $parts = @($b.Split(',') | ForEach-Object { $_.Trim() } | Where-Object { $_ -and $_.Length -gt 0 })
+    # Use array wrapper to be robust under StrictMode when $parts is unexpectedly scalar/null.
+    if ((@($parts)).Count -eq 2) {
+      if (-not $compareWorktree -and $h -eq 'HEAD') {
+        Write-Warning ("BaseRef contains a comma; interpreting as BaseRef='{0}', HeadRef='{1}'." -f $parts[0], $parts[1])
+        $b = $parts[0]
+        $h = $parts[1]
+      } else {
+        throw ("-BaseRef appears to contain multiple refs: '{0}'. Provide a SINGLE ref for -BaseRef and -HeadRef separately (no commas)." -f $baseRef)
+      }
+    } else {
+      throw ("-BaseRef appears to contain multiple refs: '{0}'. Provide exactly one git ref per parameter (no commas)." -f $baseRef)
+    }
+  }
+
+  if ($b.Length -eq 0) { throw "-BaseRef is empty. Examples: origin/main, HEAD~1, HEAD." }
+  if (-not $compareWorktree -and $h.Length -eq 0) { throw "-HeadRef is empty. Examples: HEAD, HEAD~1." }
+
+  return [pscustomobject]@{ BaseRef = $b; HeadRef = $h }
+}
+
+function Test-GitRevision([string]$ref) {
+  if ($null -eq $ref -or $ref.Trim().Length -eq 0) { return $false }
+  $spec = ("{0}^{{commit}}" -f $ref.Trim())
+  & git rev-parse --verify $spec 2>$null 1>$null
+  return ($LASTEXITCODE -eq 0)
+}
+
+function Assert-GitRevision([string]$ref, [string]$which) {
+  if (Test-GitRevision $ref) { return }
+
+  # If the user uses origin/* but hasn't fetched, try once.
+  if ($ref -like 'origin/*') {
+    Write-Host ("Ref '{0}' not found locally. Running: git fetch --prune origin" -f $ref)
+    & git fetch --prune origin
+    if (Test-GitRevision $ref) { return }
+  }
+
+  throw ("{0} '{1}' is not a valid git revision in this repository. " +
+         "Enter ONE ref per parameter (no commas). Examples: -BaseRef origin/main -HeadRef HEAD~1, or -BaseRef HEAD~1 -HeadRef HEAD." -f $which, $ref)
+}
 function Export-GitZip([string]$ref, [string]$dest) {
   Ensure-Dir $dest
   $zip = Join-Path $env:TEMP ("latexdiff-{0}-{1}.zip" -f ($ref -replace '[^\w\.-]','_'), (Get-Random))
@@ -204,15 +258,7 @@ function Get-ChangedPathsList([string]$baseRef, [string]$headRef, [bool]$compare
   return $out
 }
 
-function Write-ChangeSummaryTex(
-  [string]$diffDir,
-  [string[]]$changedPaths,
-  [string]$baseLabel,
-  [string]$headLabel,
-  [string]$baseRef,
-  [string]$headRef,
-  [bool]$compareWorktree
-) {
+function Write-ChangeSummaryTex([string]$diffDir, [string[]]$changedPaths, [string]$baseLabel, [string]$headLabel) {
   $dst = Join-Path $diffDir "change_summary.tex"
 
   $texChanged   = @()
@@ -248,7 +294,8 @@ function Write-ChangeSummaryTex(
       $s = ([string]$it).Trim()
       if ($s.Length -gt 0) { $clean += $s }
     }
-    if ($clean.Count -eq 0) { return }
+    # Be robust under StrictMode even if $clean is unexpectedly scalar/null.
+    if ((@($clean)).Count -eq 0) { return }
 
     $script:addedAnyTopItem = $true
     $lines.Add("  \item \textbf{$title}") | Out-Null
@@ -269,69 +316,6 @@ function Write-ChangeSummaryTex(
   }
 
   $lines.Add("\end{itemize}") | Out-Null
-
-  # Contributor summary (git). Not available when comparing against the working tree.
-  if (-not $compareWorktree -and $baseRef -and $headRef) {
-    $lines.Add("\par\medskip") | Out-Null
-    $lines.Add("\noindent\textbf{Contributors (git log):}") | Out-Null
-    $lines.Add("\begin{itemize}") | Out-Null
-
-    $log = @()
-    try {
-      $log = & git log --name-only --pretty=format:"@@@%an\t%ae" "$baseRef..$headRef"
-    } catch {
-      $log = @()
-    }
-
-    $commits = @{}
-    $filesByAuthor = @{}
-    $cur = $null
-
-    foreach ($ln in $log) {
-      if ($ln -like "@@@*") {
-        $cur = $ln.Substring(3).Trim()
-        if (-not $commits.ContainsKey($cur)) {
-          $commits[$cur] = 0
-          $filesByAuthor[$cur] = New-Object 'System.Collections.Generic.HashSet[string]'
-        }
-        $commits[$cur] = [int]$commits[$cur] + 1
-        continue
-      }
-      $p = ($ln | ForEach-Object { $_.Trim() })
-      if ($p -and $cur) {
-        [void]$filesByAuthor[$cur].Add($p)
-      }
-    }
-
-    if ($commits.Count -eq 0) {
-      $lines.Add("  \item \textit{(No commits found in range.)}") | Out-Null
-    } else {
-      $ordered = $commits.GetEnumerator() | Sort-Object Value -Descending
-      foreach ($e in $ordered) {
-        $a = [string]$e.Key
-        $nCommits = [int]$e.Value
-        $fileSet = $filesByAuthor[$a]
-        $fileList = @($fileSet) | Sort-Object
-        $nFiles = $fileList.Count
-        $lines.Add("  \item \texttt{" + (Escape-LatexText $a) + "} (commits: $nCommits, files: $nFiles)") | Out-Null
-        if ($nFiles -gt 0) {
-          $lines.Add("  \begin{itemize}") | Out-Null
-          $maxShow = 30
-          $shown = $fileList | Select-Object -First $maxShow
-          foreach ($f in $shown) {
-            $lines.Add("    \item \texttt{" + (Escape-LatexText $f) + "}") | Out-Null
-          }
-          if ($nFiles -gt $maxShow) {
-            $lines.Add("    \item \textit{... + " + ($nFiles - $maxShow) + " more}") | Out-Null
-          }
-          $lines.Add("  \end{itemize}") | Out-Null
-        }
-      }
-    }
-
-    $lines.Add("\end{itemize}") | Out-Null
-  }
-
   $lines.Add("\endgroup") | Out-Null
   $lines.Add("") | Out-Null
 
@@ -484,16 +468,12 @@ try {
   Assert-Command "lualatex"
   Assert-Command "biber"
 
-  # Default BaseRef: prefer origin/main when available (common PR review base).
-  # Only apply this when the user did not explicitly pass -BaseRef.
-  if (-not $PSBoundParameters.ContainsKey('BaseRef')) {
-    try {
-      & git show-ref --verify --quiet refs/remotes/origin/main
-      if ($LASTEXITCODE -eq 0) { $BaseRef = "origin/main" }
-    } catch {
-      # ignore
-    }
-  }
+  # Normalize/validate git refs early (better errors; prevents downstream null failures)
+  $nr = Normalize-GitRefs -baseRef $BaseRef -headRef $HeadRef -compareWorktree ([bool]$CompareWorktree)
+  $BaseRef = $nr.BaseRef
+  $HeadRef = $nr.HeadRef
+  Assert-GitRevision -ref $BaseRef -which "BaseRef"
+  if (-not $CompareWorktree) { Assert-GitRevision -ref $HeadRef -which "HeadRef" }
 
   $HasLatexpand = Try-HasCommand "latexpand"
 
@@ -531,7 +511,7 @@ try {
 
   # Write change summary into diff/ so reviewers can see which split files changed
   $headLabel = if ($CompareWorktree) { "working tree" } else { $HeadRef }
-  Write-ChangeSummaryTex -diffDir $DiffDir -changedPaths $changedList -baseLabel $BaseRef -headLabel $headLabel -baseRef $BaseRef -headRef $HeadRef -compareWorktree ([bool]$CompareWorktree) | Out-Null
+  Write-ChangeSummaryTex -diffDir $DiffDir -changedPaths $changedList -baseLabel $BaseRef -headLabel $headLabel | Out-Null
 
   $BaseTex = Join-Path $TempBase $RootTex
   $HeadTex = Join-Path $TempHead $RootTex

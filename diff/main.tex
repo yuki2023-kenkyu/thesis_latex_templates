@@ -1,0 +1,212 @@
+﻿\documentclass[luatex,base=12pt]{japanese_thesis}
+%DIF LATEXDIFF DIFFERENCE FILE
+%DIF DEL C:\Users\yuki\AppData\Local\Temp\latexdiff-base-flat-1152486673.tex   Tue Jan 20 02:13:25 2026
+%DIF ADD C:\Users\yuki\AppData\Local\Temp\latexdiff-head-flat-928701856.tex    Tue Jan 20 02:13:25 2026
+\usepackage{./preambles/packages_lualatex}
+\usepackage{./preambles/macros}
+% 参考文献ファイルの読み込み
+\addbibresource{./references/reference_1.bib}
+% 表紙の出力情報の設定
+% \SetMasterThesis % 修士論文の場合コメントを外す
+% \SetDoctoralThesis % 博士論文の場合コメントを外す
+%DIF 9a9-11
+% \University{福島大学} %DIF > 
+% \AffiliationLineA{大学院共生システム理工学研究科} %DIF > 
+% \AffiliationLineB{共生システム理工学専攻} %DIF > 
+%DIF -------
+\Title{チュートリアル} % タイトル
+\StudentNumber{123456789} % 学籍番号
+%DIF 11-12c14-15
+%DIF < \Author{物理　\ 太郎} % 著者名
+%DIF < \Professor{物理　\ 花子} % 指導教員名
+%DIF -------
+\Author{物理\ 太郎} % 著者名 %DIF > 
+\Professor{物理\ 花子} % 指導教員名 %DIF > 
+%DIF -------
+\DateofSubmission{7} % 年度
+%DIF PREAMBLE EXTENSION ADDED BY LATEXDIFF
+% latexdiff preamble (Japanese-safe): color markup (inline + block) %DIF PREAMBLE
+% -------------------------------------------------------------- %DIF PREAMBLE
+\RequirePackage{xcolor} %DIF PREAMBLE
+\definecolor{DIFaddcolor}{rgb}{0,0,1} %DIF PREAMBLE
+\definecolor{DIFdelcolor}{rgb}{1,0,0} %DIF PREAMBLE
+ %DIF PREAMBLE
+% If hyperref is not loaded, provide a harmless fallback. %DIF PREAMBLE
+\providecommand{\texorpdfstring}[2]{#1} %DIF PREAMBLE
+ %DIF PREAMBLE
+% --- Inline markup (token-level) --- %DIF PREAMBLE
+% Distinct edit markers for readability (add/delete). %DIF PREAMBLE
+% (Replacement is shown as del+add by latexdiff.) %DIF PREAMBLE
+\providecommand{\DIFadd}[1]{\texorpdfstring{{\color{DIFaddcolor}\textbf{[+]\,}#1}}{#1}} %DIF PREAMBLE
+\providecommand{\DIFdel}[1]{\texorpdfstring{{\color{DIFdelcolor}\textbf{[-]\,}#1}}{#1}} %DIF PREAMBLE
+ %DIF PREAMBLE
+% --- Block markup (paragraph-level, environments) --- %DIF PREAMBLE
+\providecommand{\DIFaddbegin}{\begingroup\color{DIFaddcolor}} %DIF PREAMBLE
+\providecommand{\DIFaddend}{\endgroup} %DIF PREAMBLE
+\providecommand{\DIFdelbegin}{\begingroup\color{DIFdelcolor}} %DIF PREAMBLE
+\providecommand{\DIFdelend}{\endgroup} %DIF PREAMBLE
+\providecommand{\DIFmodbegin}{} %DIF PREAMBLE
+\providecommand{\DIFmodend}{} %DIF PREAMBLE
+ %DIF PREAMBLE
+% --- Floats --- %DIF PREAMBLE
+\providecommand{\DIFaddFL}[1]{\DIFadd{#1}} %DIF PREAMBLE
+\providecommand{\DIFdelFL}[1]{\DIFdel{#1}} %DIF PREAMBLE
+\providecommand{\DIFaddbeginFL}{\begingroup\color{DIFaddcolor}} %DIF PREAMBLE
+\providecommand{\DIFaddendFL}{\endgroup} %DIF PREAMBLE
+\providecommand{\DIFdelbeginFL}{\begingroup\color{DIFdelcolor}} %DIF PREAMBLE
+\providecommand{\DIFdelendFL}{\endgroup} %DIF PREAMBLE
+ %DIF PREAMBLE
+% --- Optional: show source file boundaries (used when scripts post-process latexpand --explain output) --- %DIF PREAMBLE
+% The scripts can convert lines like "% start input ./path/to/file.tex" into "\DIFinput{./path/to/file.tex}". %DIF PREAMBLE
+\providecommand{\DIFinput}[1]{% %DIF PREAMBLE
+  \par\noindent\begingroup %DIF PREAMBLE
+  \ttfamily\footnotesize %DIF PREAMBLE
+  \fbox{\strut file: #1}% %DIF PREAMBLE
+  \endgroup\par\noindent %DIF PREAMBLE
+} %DIF PREAMBLE
+\newcommand{\DIFscaledelfig}{0.5}
+%DIF HIGHLIGHTGRAPHICS PREAMBLE %DIF PREAMBLE
+\RequirePackage{settobox} %DIF PREAMBLE
+\RequirePackage{letltxmacro} %DIF PREAMBLE
+\newsavebox{\DIFdelgraphicsbox} %DIF PREAMBLE
+\newlength{\DIFdelgraphicswidth} %DIF PREAMBLE
+\newlength{\DIFdelgraphicsheight} %DIF PREAMBLE
+% store original definition of \includegraphics %DIF PREAMBLE
+\LetLtxMacro{\DIFOincludegraphics}{\includegraphics} %DIF PREAMBLE
+\newcommand{\DIFaddincludegraphics}[2][]{{\color{blue}\fbox{\DIFOincludegraphics[#1]{#2}}}} %DIF PREAMBLE
+\newcommand{\DIFdelincludegraphics}[2][]{% %DIF PREAMBLE
+\sbox{\DIFdelgraphicsbox}{\DIFOincludegraphics[#1]{#2}}% %DIF PREAMBLE
+\settoboxwidth{\DIFdelgraphicswidth}{\DIFdelgraphicsbox} %DIF PREAMBLE
+\settoboxtotalheight{\DIFdelgraphicsheight}{\DIFdelgraphicsbox} %DIF PREAMBLE
+\scalebox{\DIFscaledelfig}{% %DIF PREAMBLE
+\parbox[b]{\DIFdelgraphicswidth}{\usebox{\DIFdelgraphicsbox}\\[-\baselineskip] \rule{\DIFdelgraphicswidth}{0em}}\llap{\resizebox{\DIFdelgraphicswidth}{\DIFdelgraphicsheight}{% %DIF PREAMBLE
+\setlength{\unitlength}{\DIFdelgraphicswidth}% %DIF PREAMBLE
+\begin{picture}(1,1)% %DIF PREAMBLE
+\thicklines\linethickness{2pt} %DIF PREAMBLE
+{\color[rgb]{1,0,0}\put(0,0){\framebox(1,1){}}}% %DIF PREAMBLE
+{\color[rgb]{1,0,0}\put(0,0){\line( 1,1){1}}}% %DIF PREAMBLE
+{\color[rgb]{1,0,0}\put(0,1){\line(1,-1){1}}}% %DIF PREAMBLE
+\end{picture}% %DIF PREAMBLE
+}\hspace*{3pt}}} %DIF PREAMBLE
+} %DIF PREAMBLE
+\LetLtxMacro{\DIFOaddbegin}{\DIFaddbegin} %DIF PREAMBLE
+\LetLtxMacro{\DIFOaddend}{\DIFaddend} %DIF PREAMBLE
+\LetLtxMacro{\DIFOdelbegin}{\DIFdelbegin} %DIF PREAMBLE
+\LetLtxMacro{\DIFOdelend}{\DIFdelend} %DIF PREAMBLE
+\DeclareRobustCommand{\DIFaddbegin}{\DIFOaddbegin \let\includegraphics\DIFaddincludegraphics} %DIF PREAMBLE
+\DeclareRobustCommand{\DIFaddend}{\DIFOaddend \let\includegraphics\DIFOincludegraphics} %DIF PREAMBLE
+\DeclareRobustCommand{\DIFdelbegin}{\DIFOdelbegin \let\includegraphics\DIFdelincludegraphics} %DIF PREAMBLE
+\DeclareRobustCommand{\DIFdelend}{\DIFOaddend \let\includegraphics\DIFOincludegraphics} %DIF PREAMBLE
+\LetLtxMacro{\DIFOaddbeginFL}{\DIFaddbeginFL} %DIF PREAMBLE
+\LetLtxMacro{\DIFOaddendFL}{\DIFaddendFL} %DIF PREAMBLE
+\LetLtxMacro{\DIFOdelbeginFL}{\DIFdelbeginFL} %DIF PREAMBLE
+\LetLtxMacro{\DIFOdelendFL}{\DIFdelendFL} %DIF PREAMBLE
+\DeclareRobustCommand{\DIFaddbeginFL}{\DIFOaddbeginFL \let\includegraphics\DIFaddincludegraphics} %DIF PREAMBLE
+\DeclareRobustCommand{\DIFaddendFL}{\DIFOaddendFL \let\includegraphics\DIFOincludegraphics} %DIF PREAMBLE
+\DeclareRobustCommand{\DIFdelbeginFL}{\DIFOdelbeginFL \let\includegraphics\DIFdelincludegraphics} %DIF PREAMBLE
+\DeclareRobustCommand{\DIFdelendFL}{\DIFOaddendFL \let\includegraphics\DIFOincludegraphics} %DIF PREAMBLE
+%DIF LISTINGS PREAMBLE %DIF PREAMBLE
+\RequirePackage{listings} %DIF PREAMBLE
+\lstdefinelanguage{DIFcode}{ %DIF PREAMBLE
+%DIF DIFCODE_BOLD %DIF PREAMBLE
+  % unfortunately \bfseries cannot be combined with ttfamily without extra packages %DIF PREAMBLE
+  % also morecomment=[il] is broken as of v1.5b of listings at least %DIF PREAMBLE
+  % workaround: plot in white with tiny font %DIF PREAMBLE
+  % morecomment=[il]{\%DIF\ <\ }, %DIF PREAMBLE
+  moredelim=[il][\color{white}\tiny]{\%DIF\ <\ }, %DIF PREAMBLE
+  moredelim=[il][\sffamily\bfseries]{\%DIF\ >\ } %DIF PREAMBLE
+} %DIF PREAMBLE
+\lstdefinestyle{DIFverbatimstyle}{ %DIF PREAMBLE
+	language=DIFcode, %DIF PREAMBLE
+	basicstyle=\ttfamily, %DIF PREAMBLE
+	columns=fullflexible, %DIF PREAMBLE
+	keepspaces=true %DIF PREAMBLE
+} %DIF PREAMBLE
+\lstnewenvironment{DIFverbatim}{\lstset{style=DIFverbatimstyle}}{} %DIF PREAMBLE
+\lstnewenvironment{DIFverbatim*}{\lstset{style=DIFverbatimstyle,showspaces=true}}{} %DIF PREAMBLE
+\lstset{extendedchars=\true,inputencoding=utf8}
+
+%DIF END PREAMBLE EXTENSION ADDED BY LATEXDIFF
+
+\begin{document}
+\input{change_summary.tex}
+\clearpage
+
+    \Maketitle % 表紙の出力
+    \tableofcontents % 目次の出力
+    \mainmatter
+\DIFinput{./documents/introduction.tex}
+\chapter{序 論}
+本資料は，\LaTeX を使って卒業論文を執筆する理系学生を対象にしています．\LaTeX の基本構造から始まり，便利なパッケージの使い方，数式入力，図や表の挿入方法，文献管理の方法，さらには自作マクロの定義方法までを詳しく説明します．
+どうもこんにちは % end input ./documents/introduction.tex
+\DIFinput{./documents/conclusion.tex}
+\chapter{結 論}
+できるだけしっかり書きましょう．
+
+% \chapter{とても長い章タイトルの例をここに書きます}
+\section{とてもとてもとてもとてもとても長い章タイトルの例をここに書きます}
+\subsection{とてもとてもとてもとてもとても長い章タイトルの例をここに書きます}
+\subsubsection{とてもとてもとてもとてもとてもとてもとてもとても長い章タイトルの例をここに書きます}
+
+さようなら % end input ./documents/conclusion.tex
+\DIFinput{./documents/appendix.tex}
+\appendix
+\appendixstyle
+\chapter{数値解析コード}\label{appendix:code1}
+ソースコード等を付録として示す場合は以下のようにしましょう．
+%ソースコードのPathはmain.tex側から見た時のPathを指定
+% inside_import 
+% before 
+% ignored 
+% args [caption = 使用した数値解析コード, label = lst:program2]
+% full_filename ./source_codes/source_code_1.py
+% after 
+\lstinputlisting[caption = 使用した数値解析コード, label = lst:program2]{./source_codes/source_code_1.py}
+\section{その他の付録}
+付録における数式番号の出力スタイルのテストです．
+\begin{equation}\label{eq:test_1}
+    E=mc^2
+\end{equation}
+
+\zcref{eq:test_1}は有名な式です(\zcref{appendix:code1})．
+
+付録ソースコード参照用独自マクロのテストです．\zcref{lst:program2}はPythonのコードです．
+
+$\SI{8}{kg}$の質量を持つ物体が，$\SI{10}{m/s}$の速度で運動しているときの運動エネルギーは$\SI{400}{J}$です．
+
+\chapter{huhuu}
+
+$\SI{100}{\hertz}$の周波数の音波が，$\SI{340}{\meter/\second}$の音速で伝わるときの波長は$\SI{3.4}{\meter}$です．
+
+\cite{G_ng_r_2021,学術論文の書き方・発表の仕方,Planck:2018vyg,木下是雄2001理科系の作文技術}
+\DIFinput{./tables/example\\_1.tex}
+\begin{talltblr}[
+    caption={Example Table 1},
+    label={tb:example_1},
+    ]{
+    width = { \linewidth },
+    colspec = {X[c] X[c] X[c] X[c]}, % 列指定（Xは幅自動調整、cは中央揃え）
+    % 二重罫線の設定
+    hline{1} = {1}{-}{},  % 2重罫線
+    hline{1} = {2}{-}{},  % 2重罫線
+    hline{2} = {1}{-}{0.5pt},
+    hline{Z} = {1}{-}{},  % 2重罫線
+    hline{Z} = {2}{-}{},  % 2重罫線
+    % vlines
+    }
+    Alpha & Beta & Gamma & Delta \\
+    Epsilon & Zeta & Eta & Theta \\
+    Iota & Kappa & Lambda & Mu \\
+\end{talltblr}
+ % end input ./tables/example_1.tex
+
+削除
+ % end input ./documents/appendix.tex
+\DIFinput{./documents/thanks.tex}
+\thanks
+    本論文を執筆するにあたり，感謝すべき人物，環境などがありましたら記述してください． % end input ./documents/thanks.tex
+     \printbibliography[title=参考文献]
+\end{document}
+% EOF
+
+

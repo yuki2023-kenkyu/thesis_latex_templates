@@ -1,0 +1,159 @@
+% checkstyle.sty
+% -------------------------------------------------------------------
+% Draft / review helper layer for the japanese_thesis (bxjsreport-based) template.
+%
+% Goals
+% - In draft mode: show colored review comments + manual change markup (changes package)
+% - In final mode: keep commands available but suppress their output
+% - Provide distinct edit markers for add/delete/replace
+% - Play nicely with the existing template (comment package already used elsewhere)
+%
+% Notes
+% - Author attribution for *git-based* diffs cannot be done purely inside TeX.
+%   This package focuses on manual markup (changes) + visible review note blocks.
+% -------------------------------------------------------------------
+
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{checkstyle}[2026/01/19 Draft review helpers (changes+comment)]
+
+% ---- Detect class draft/final -------------------------------------------------
+% changes-package can reuse \documentclass draft/final, but we also need a flag
+% for comment-environment visibility and optional end-of-document lists.
+\RequirePackage{etoolbox}
+\RequirePackage{xstring}
+\newif\ifcheckstyleDraft
+\checkstyleDraftfalse
+\makeatletter
+% Primary: check bxjsreport's option state (japanese_thesis is bxjsreport-based)
+\@ifclasswith{bxjsreport}{draft}{\checkstyleDrafttrue}{}
+% Fallback: some classes set \if@draft
+\@ifundefined{if@draft}{}{\if@draft\checkstyleDrafttrue\fi}
+\makeatother
+
+% ---- Colored block comments via comment package --------------------------------
+% We define review/todo/note environments that are *visible only in draft*.
+\RequirePackage{comment}
+\RequirePackage[dvipsnames]{xcolor}
+
+% NOTE: The environment name "todo" conflicts with the very common \todo command
+% (e.g. from the todonotes package).  We therefore define "todo" only when
+% \todo is not already defined.  "cstodo" is always available.
+\ifcheckstyleDraft
+  % Visible, colored blocks
+  \specialcomment{review}{\begingroup\color{red}\bfseries[REVIEW]\ }{\endgroup}
+  \specialcomment{note}{\begingroup\color{blue}\bfseries[NOTE]\ }{\endgroup}
+  \specialcomment{cstodo}{\begingroup\color{magenta}\bfseries[TODO]\ }{\endgroup}
+  \makeatletter
+  \@ifundefined{todo}{\specialcomment{todo}{\begingroup\color{magenta}\bfseries[TODO]\ }{\endgroup}}{}
+  \makeatother
+\else
+  % Completely removed from output in final builds
+  \excludecomment{review}
+  \excludecomment{note}
+  \excludecomment{cstodo}
+  \makeatletter
+  % Define the environment 'todo' only when it does not conflict with \todo.
+  \@ifundefined{todo}{\excludecomment{todo}}{}
+  \makeatother
+\fi
+
+% ---- Manual change tracking (changes package) ----------------------------------
+% Use commandnameprefix=always to avoid collisions with other packages/macros.
+% Per the changes manual, this prefixes: \added/\deleted/\replaced/\highlight/\comment
+% -> \chadded/\chdeleted/\chreplaced/\chhighlight/\chcomment.
+% Some older TeX Live setups do not support commentmarkup=comment in changes.
+% We use margin comments to avoid pulling in todonotes.
+\ifcheckstyleDraft
+  \RequirePackage[draft,commandnameprefix=always,commentmarkup=margin,authormarkup=brackets,authormarkupposition=right,authormarkuptext=name]{changes}
+\else
+  \RequirePackage[final,commandnameprefix=always,commentmarkup=margin,authormarkup=brackets,authormarkupposition=right,authormarkuptext=name]{changes}
+\fi
+
+% Helper for defining authors in a separate file.
+% Usage: \CheckstyleDefineAuthor{ID}{Display Name}{color}
+% (This MUST be defined before loading checkstyle_authors.*.)
+\providecommand{\CheckstyleDefineAuthor}[3]{%
+  \definechangesauthor[name={#2},color={#3}]{#1}%
+}
+
+% Optional: allow users/scripts to provide author definitions.
+% Prefer local preambles/ files, fall back to project root.
+% (We only load the first matching file.)
+\newif\ifcheckstyleAuthorsLoaded
+\checkstyleAuthorsLoadedfalse
+\newcommand*\checkstyleTryInput[1]{%
+  \ifcheckstyleAuthorsLoaded\else
+    \IfFileExists{#1}{\input{#1}\checkstyleAuthorsLoadedtrue}{}%
+  \fi
+}
+\checkstyleTryInput{preambles/checkstyle_authors.sty}
+\checkstyleTryInput{preambles/checkstyle_author.sty}
+\checkstyleTryInput{preambles/checkstyle_authors.tex}
+\checkstyleTryInput{preambles/checkstyle_author.tex}
+\checkstyleTryInput{checkstyle_authors.sty}
+\checkstyleTryInput{checkstyle_author.sty}
+\checkstyleTryInput{checkstyle_authors.tex}
+\checkstyleTryInput{checkstyle_author.tex}
+
+% Anonymous label (when id is omitted)
+\setanonymousname{ANON}
+
+% Distinct edit markers (add/delete) in addition to the standard visual markup.
+% The replaced output is a combination of added+deleted, so it inherits both.
+\newcommand*\checkstyleMarkAdded{\textbf{[+]\,}}
+\newcommand*\checkstyleMarkDeleted{\textbf{[-]\,}}
+% Add an explicit replacement marker to make "replace" operations easy to spot.
+% This is output-only and therefore wrapped in \ifcheckstyleDraft.
+\newcommand*\checkstyleMarkReplaced{\ifcheckstyleDraft\textbf{[\textasciitilde]}\fi}
+\setaddedmarkup{\checkstyleMarkAdded#1}
+\setdeletedmarkup{\checkstyleMarkDeleted#1}
+
+% Convenience aliases (so users don't have to remember the \ch* names).
+% These wrappers accept either:
+%   - no optional argument: \Added{...}
+%   - a bare author id:     \Added[A]{...}
+%   - a full key list:      \Added[id=A,comment={...}]{...}
+%
+% IMPORTANT: For \Replaced, the order is (new, old), matching the changes package.
+\newcommand{\Added}[2][]{%
+  \ifstrempty{#1}{\chadded{#2}}{\IfSubStr{#1}{=}{\chadded[#1]{#2}}{\chadded[id=#1]{#2}}}%
+}
+\newcommand{\Deleted}[2][]{%
+  \ifstrempty{#1}{\chdeleted{#2}}{\IfSubStr{#1}{=}{\chdeleted[#1]{#2}}{\chdeleted[id=#1]{#2}}}%
+}
+\newcommand{\Replaced}[3][]{%
+  \ifstrempty{#1}{\checkstyleMarkReplaced\chreplaced{#2}{#3}}{\IfSubStr{#1}{=}{\checkstyleMarkReplaced\chreplaced[#1]{#2}{#3}}{\checkstyleMarkReplaced\chreplaced[id=#1]{#2}{#3}}}%
+}
+\newcommand{\Highlighted}[2][]{%
+  \ifstrempty{#1}{\chhighlight{#2}}{\IfSubStr{#1}{=}{\chhighlight[#1]{#2}}{\chhighlight[id=#1]{#2}}}%
+}
+% Comments as footnotes (only for \ChangeComment).
+% We keep the global changes option commentmarkup=margin so that comments attached to
+% \Added/\Deleted/\Replaced via the 'comment=' key still go to the margin.
+%
+% This works by temporarily overriding the comment markup inside a group.
+%
+% NOTE: Do not use \ChangeComment in moving arguments (e.g. section titles) because
+% it expands to \footnote.
+\newcommand{\ChangeComment}[2][]{%
+  \begingroup
+    \setcommentmarkup{\footnote{{\IfIsColored{\color{authorcolor}}{}\textbf{##3: }}##1}}%
+    \ifstrempty{#1}{\chcomment{#2}}{\IfSubStr{#1}{=}{\chcomment[#1]{#2}}{\chcomment[id=#1]{#2}}}%
+  \endgroup
+}
+
+
+% Optional: emit a list of changes automatically in draft builds.
+% Users can still call \listofchanges manually where they want.
+\newif\ifcheckstyleAutoList
+\checkstyleAutoListtrue
+% If you prefer manual placement, set \checkstyleAutoListfalse in your preamble.
+\AtEndDocument{%
+  \ifcheckstyleDraft
+    \ifcheckstyleAutoList
+      \clearpage
+      \section*{List of Changes (manual markup)}
+      \listofchanges[style=list]%
+    \fi
+  \fi
+}

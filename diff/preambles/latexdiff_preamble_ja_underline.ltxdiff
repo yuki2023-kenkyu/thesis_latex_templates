@@ -1,0 +1,48 @@
+% latexdiff preamble (Japanese-aware): underline/strikeout markup
+% -------------------------------------------------------------
+% This file is intended for use with:
+%   latexdiff --preamble=preambles/latexdiff_preamble_ja_underline.ltxdiff old.tex new.tex
+%
+% Notes
+%   - This style uses ulem for underline/strikeout. Depending on your font and
+%     line-breaking settings, Japanese text may look slightly unstable.
+%   - If you observe breakage, prefer the color-only preamble:
+%       preambles/latexdiff_preamble_ja_color.ltxdiff
+
+\RequirePackage[normalem]{ulem}
+\RequirePackage{xcolor}
+\definecolor{DIFaddcolor}{rgb}{0,0,1}
+\definecolor{DIFdelcolor}{rgb}{1,0,0}
+
+% If hyperref is not loaded, provide a harmless fallback.
+\providecommand{\texorpdfstring}[2]{#1}
+
+% --- Inline markup ---
+% Distinct edit markers for readability (add/delete).
+\providecommand{\DIFadd}[1]{\texorpdfstring{{\protect\color{DIFaddcolor}\textbf{[+]\,}\uline{#1}}}{#1}}
+\providecommand{\DIFdel}[1]{\texorpdfstring{{\protect\color{DIFdelcolor}\textbf{[-]\,}\sout{#1}}}{#1}}
+
+% --- Block markup ---
+\providecommand{\DIFaddbegin}{}
+\providecommand{\DIFaddend}{}
+\providecommand{\DIFdelbegin}{}
+\providecommand{\DIFdelend}{}
+\providecommand{\DIFmodbegin}{}
+\providecommand{\DIFmodend}{}
+
+% --- Floats ---
+\providecommand{\DIFaddFL}[1]{\DIFadd{#1}}
+\providecommand{\DIFdelFL}[1]{\DIFdel{#1}}
+\providecommand{\DIFaddbeginFL}{}
+\providecommand{\DIFaddendFL}{}
+\providecommand{\DIFdelbeginFL}{}
+\providecommand{\DIFdelendFL}{}
+
+% --- Optional: show source file boundaries (used when scripts post-process latexpand --explain output) ---
+% The scripts can convert lines like "% start input ./path/to/file.tex" into "\DIFinput{./path/to/file.tex}".
+\providecommand{\DIFinput}[1]{%
+  \par\noindent\begingroup
+  \ttfamily\footnotesize
+  \fbox{\strut file: #1}%
+  \endgroup\par\noindent
+}

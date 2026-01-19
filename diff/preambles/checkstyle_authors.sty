@@ -1,0 +1,18 @@
+% checkstyle_authors.sty
+% Local author definitions for the 'changes' package used by checkstyle.sty.
+
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{checkstyle_authors}[2026/01/19 Local changes authors for checkstyle]
+
+% Fallback: if this package is loaded standalone, provide the helper macro.
+% (checkstyle.sty defines this macro before loading this package.)
+\providecommand{\CheckstyleDefineAuthor}[3]{%
+  \definechangesauthor[name={#2},color={#3}]{#1}%
+}
+
+% Examples (uncomment and edit):
+\CheckstyleDefineAuthor{HK}{Yuki Hashimoto}{RoyalBlue}
+\CheckstyleDefineAuthor{AD}{Advisor}{ForestGreen}
+\CheckstyleDefineAuthor{RV}{Reviewer}{BrickRed}
+
+\endinput

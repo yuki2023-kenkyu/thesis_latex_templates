@@ -2,17 +2,14 @@
 set -euo pipefail
 
 # Usage:
-#   ./scripts/make_diff.sh [ROOT_TEX=main.tex] [BASE_REF] [HEAD_REF=HEAD]
-#
-# Default BASE_REF:
-#   - If refs/remotes/origin/main exists: origin/main
-#   - Otherwise: HEAD~1
+#   ./scripts/make_diff.sh [ROOT_TEX=main.tex] [BASE_REF=HEAD~1] [HEAD_REF=HEAD]
 #
 # Optional environment variables (recommended defaults are shown):
-#   LTXDIFF_STYLE="ja-color"        # ja-color | ja-underline | ja-uline | cfont | underline
-#   LTXDIFF_MATH_MARKUP="coarse"    # off|whole|coarse|fine (or 0..3)
+#   LTXDIFF_STYLE="ja-color"            # ja-color | ja-underline | ja-uline | cfont | underline
+#   LTXDIFF_MATH_MARKUP="coarse"        # off|whole|coarse|fine (or 0..3)
 #   LTXDIFF_GRAPHICS_MARKUP="new-only"  # none|new-only|both
 #   LTXDIFF_DISABLE_CITATION_MARKUP="auto" # auto|true|false (auto enables for underline styles)
+#   LTXDIFF_CLEANUP_MODE="pdf+changed"  # none|pdf-only|pdf+changed
 #
 # Examples:
 #   ./scripts/make_diff.sh                      # HEAD~1 vs HEAD (committed)
@@ -21,18 +18,15 @@ set -euo pipefail
 #
 # Requirements (macOS/Linux):
 #   - git
-#   - latexdiff-vc (TeX Live "latexdiff" package; on macOS with MacTeX it is usually available)
+#   - latexdiff-vc (TeX Live "latexdiff" package; it uses latexpand for --flatten)
 #   - lualatex, biber
+#   - python3
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
 ROOT_TEX="${1:-main.tex}"
-DEFAULT_BASE_REF="HEAD~1"
-if git show-ref --verify --quiet refs/remotes/origin/main; then
-  DEFAULT_BASE_REF="origin/main"
-fi
-BASE_REF="${2:-$DEFAULT_BASE_REF}"
+BASE_REF="${2:-HEAD~1}"
 HEAD_REF="${3:-HEAD}"
 
 # If the user provided BASE_REF only (2 args total), compare BASE_REF vs working tree
@@ -49,6 +43,7 @@ STYLE="${LTXDIFF_STYLE:-ja-color}"
 MATH_MARKUP="${LTXDIFF_MATH_MARKUP:-coarse}"
 GRAPHICS_MARKUP="${LTXDIFF_GRAPHICS_MARKUP:-new-only}"
 DISABLE_CITATION_MARKUP="${LTXDIFF_DISABLE_CITATION_MARKUP:-auto}"
+CLEANUP_MODE="${LTXDIFF_CLEANUP_MODE:-pdf+changed}"
 
 DIFF_OPTS=("--encoding=utf8" "--math-markup=${MATH_MARKUP}" "--graphics-markup=${GRAPHICS_MARKUP}")
 
@@ -72,7 +67,7 @@ case "$STYLE" in
     echo "Unknown LTXDIFF_STYLE: ${STYLE} (expected: ja-color | ja-underline | ja-uline | cfont | underline)" >&2
     exit 2
     ;;
-esac
+ esac
 
 if [[ "$DISABLE_CITATION_MARKUP" == "true" ]]; then
   DIFF_OPTS+=("--disable-citation-markup")
@@ -105,12 +100,12 @@ else
   HEAD_LABEL="${HEAD_REF}"
 fi
 
-export BASE_REF HEAD_REF HEAD_LABEL DIFF_ROOT_BASENAME COMPARE_WORKTREE
+export BASE_REF HEAD_REF HEAD_LABEL COMPARE_WORKTREE DIFF_ROOT_BASENAME
 
 python3 - <<'PY'
 import os, re, subprocess
-from collections import Counter, defaultdict
 from pathlib import Path
+from collections import defaultdict
 
 def esc(s: str) -> str:
     s = s.replace("\\", "/")
@@ -119,12 +114,13 @@ def esc(s: str) -> str:
     s = s.replace("~", r"\textasciitilde{}")
     return s
 
-base_label = os.environ.get("BASE_REF", "")
+base_ref = os.environ.get("BASE_REF", "")
+head_ref = os.environ.get("HEAD_REF", "")
 head_label = os.environ.get("HEAD_LABEL", "")
-head_ref = os.environ.get("HEAD_REF", "HEAD")
-compare_worktree = os.environ.get("COMPARE_WORKTREE", "false").lower() == "true"
+compare_worktree = (os.environ.get("COMPARE_WORKTREE", "false").lower() == "true")
 diff_root = os.environ["DIFF_ROOT_BASENAME"]
 
+# --- changed files (grouped) ---
 changed = [l.strip() for l in Path("diff/.changed_files.txt").read_text(encoding="utf-8", errors="ignore").splitlines() if l.strip()]
 seen = set()
 uniq = []
@@ -139,19 +135,51 @@ for p in uniq:
     ext = Path(p).suffix.lower()
     if ext == ".tex":
         tex.append(p)
-    elif ext in {".bib", ".bbx", ".cbx"}:
+    elif ext in {".bib", ".bbx", ".cbx", ".bst"}:
         bib.append(p)
-    elif ext in {".pdf", ".png", ".jpg", ".jpeg", ".eps", ".svg"}:
+    elif ext in {".pdf", ".png", ".jpg", ".jpeg", ".eps", ".svg", ".webp"}:
         img.append(p)
     else:
         other.append(p)
+
+# --- contributors (git log) ---
+contributors = []  # list of (author, commit_count, sorted_files)
+if not compare_worktree:
+    try:
+        proc = subprocess.run(
+            ["git", "log", "--no-merges", "--name-only", f"{base_ref}..{head_ref}", "--pretty=format:@@@%an"],
+            check=False,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+        )
+        author = None
+        data = defaultdict(lambda: {"commits": 0, "files": set()})
+        for line in proc.stdout.splitlines():
+            s = line.rstrip("\n")
+            if s.startswith("@@@"): 
+                author = s[3:].strip() or "(unknown)"
+                data[author]["commits"] += 1
+                continue
+            s = s.strip()
+            if s and author:
+                data[author]["files"].add(s)
+
+        contributors = sorted(
+            [(a, v["commits"], sorted(v["files"])) for a, v in data.items()],
+            key=lambda t: (-t[1], t[0]),
+        )
+    except Exception:
+        contributors = []
 
 lines = []
 lines.append("% Auto-generated by scripts/make_diff.sh")
 lines.append(r"\begingroup")
 lines.append(r"\ifdefined\chapter\chapter*{Changes in this diff}\else\section*{Changes in this diff}\fi")
-lines.append(r"\noindent\texttt{Base: " + esc(base_label) + r"}\\")
+lines.append(r"\noindent\texttt{Base: " + esc(base_ref) + r"}\\")
 lines.append(r"\texttt{Head: " + esc(head_label) + r"}")
+
 lines.append(r"\par\medskip")
 lines.append(r"\noindent\textbf{Changed files (grouped):}")
 lines.append(r"\begin{itemize}")
@@ -173,49 +201,22 @@ if not (tex or bib or img or other):
     lines.append(r"  \item (No changed files detected by git diff)")
 lines.append(r"\end{itemize}")
 
-# Contributor summary (git). Not available when comparing against the working tree.
-if not compare_worktree:
-    try:
-        rng = f"{base_label}..{head_ref}"
-        log = subprocess.check_output(
-            ["git", "log", "--name-only", f"--pretty=format:@@@%an\t%ae", rng],
-            text=True,
-            errors="ignore",
-        )
-    except Exception:
-        log = ""
-
-    commits = Counter()
-    touched = defaultdict(set)
-    cur = None
-    for line in log.splitlines():
-        if line.startswith("@@@"):  # commit header
-            cur = line[3:].strip()
-            if cur:
-                commits[cur] += 1
-            continue
-        p = line.strip()
-        if cur and p:
-            touched[cur].add(p)
-
-    if commits:
-        lines.append(r"\par\medskip")
-        lines.append(r"\noindent\textbf{Contributors (git log):}")
-        lines.append(r"\begin{itemize}")
-
-        for author, n in commits.most_common():
-            files = sorted(touched.get(author, set()))
-            lines.append(r"  \item " + esc(author) + r" (commits: " + str(n) + r", files: " + str(len(files)) + r")")
-            if files:
-                lines.append(r"  \begin{itemize}")
-                max_files = 40
-                for f in files[:max_files]:
-                    lines.append(r"    \item \texttt{" + esc(f) + r"}")
-                if len(files) > max_files:
-                    lines.append(r"    \item \texttt{...}")
-                lines.append(r"  \end{itemize}")
-
-        lines.append(r"\end{itemize}")
+lines.append(r"\par\medskip")
+lines.append(r"\noindent\textbf{Contributors (git log):}")
+lines.append(r"\begin{itemize}")
+if compare_worktree:
+    lines.append(r"  \item \textit{(Contributor attribution is unavailable for working tree diffs.)}")
+elif not contributors:
+    lines.append(r"  \item \textit{(No commits found in this range, or contributor summary unavailable.)}")
+else:
+    for author, n_commits, files in contributors:
+        lines.append(r"  \item \textbf{" + esc(author) + r"} (\texttt{" + str(int(n_commits)) + r"} commits)")
+        if files:
+            lines.append(r"  \begin{itemize}")
+            for f in files:
+                lines.append(r"    \item \texttt{" + esc(f) + "}")
+            lines.append(r"  \end{itemize}")
+lines.append(r"\end{itemize}")
 
 lines.append(r"\endgroup")
 lines.append("")
@@ -225,9 +226,14 @@ Path("diff/change_summary.tex").write_text("\n".join(lines), encoding="utf-8")
 # Insert into diff root tex after \begin{document}
 root_path = Path("diff") / diff_root
 tex_src = root_path.read_text(encoding="utf-8", errors="ignore")
+if re.search(r"\\input\{change_summary\.tex\}", tex_src):
+    # already inserted (e.g. rerun)
+    raise SystemExit(0)
+
 m = re.search(r"\\begin\{document\}", tex_src)
 if not m:
-    raise SystemExit("Could not find \\\\begin{document} in diff root tex")
+    raise SystemExit("Could not find \\begin{document} in diff root tex")
+
 ins = "\\input{change_summary.tex}\n\\clearpage\n"
 tex_out = tex_src[:m.end()] + "\n" + ins + tex_src[m.end():]
 root_path.write_text(tex_out, encoding="utf-8")
@@ -245,3 +251,38 @@ lualatex -synctex=1 -interaction=nonstopmode -file-line-error -halt-on-error -ou
 lualatex -synctex=1 -interaction=nonstopmode -file-line-error -halt-on-error -output-directory="${OUTDIR}" "${DIFF_TEX}"
 
 echo "Done: ${OUTDIR}/${JOBNAME}.pdf"
+
+# --- cleanup (optional) ---
+case "${CLEANUP_MODE}" in
+  none)
+    ;;
+  pdf-only|pdf+changed)
+    tmpdir="$(mktemp -d)"
+    # keep PDF
+    if [[ -f "${OUTDIR}/${JOBNAME}.pdf" ]]; then
+      cp "${OUTDIR}/${JOBNAME}.pdf" "${tmpdir}/" || true
+    fi
+    if [[ "${CLEANUP_MODE}" == "pdf+changed" ]]; then
+      [[ -f diff/change_summary.tex ]] && cp diff/change_summary.tex "${tmpdir}/" || true
+      [[ -f diff/.changed_files.txt ]] && cp diff/.changed_files.txt "${tmpdir}/" || true
+      [[ -f "diff/$(basename "${ROOT_TEX}")" ]] && cp "diff/$(basename "${ROOT_TEX}")" "${tmpdir}/" || true
+    fi
+
+    rm -rf diff
+    mkdir -p diff/out
+
+    [[ -f "${tmpdir}/${JOBNAME}.pdf" ]] && mv "${tmpdir}/${JOBNAME}.pdf" diff/out/ || true
+    if [[ "${CLEANUP_MODE}" == "pdf+changed" ]]; then
+      [[ -f "${tmpdir}/change_summary.tex" ]] && mv "${tmpdir}/change_summary.tex" diff/ || true
+      [[ -f "${tmpdir}/.changed_files.txt" ]] && mv "${tmpdir}/.changed_files.txt" diff/ || true
+      rootleaf="$(basename "${ROOT_TEX}")"
+      [[ -f "${tmpdir}/${rootleaf}" ]] && mv "${tmpdir}/${rootleaf}" diff/ || true
+    fi
+
+    rm -rf "${tmpdir}"
+    ;;
+  *)
+    echo "Unknown LTXDIFF_CLEANUP_MODE: ${CLEANUP_MODE} (expected: none | pdf-only | pdf+changed)" >&2
+    exit 2
+    ;;
+esac
