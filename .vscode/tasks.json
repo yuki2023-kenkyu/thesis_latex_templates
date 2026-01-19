@@ -1,0 +1,178 @@
+{
+  "version": "2.0.0",
+  "inputs": [
+    {
+      "id": "diffBaseRef",
+      "type": "promptString",
+      "description": "Diff base git ref (e.g., origin/main, HEAD~1)",
+      "default": "origin/main"
+    },
+    {
+      "id": "diffHeadRef",
+      "type": "promptString",
+      "description": "Diff head git ref (e.g., HEAD, feature-branch)",
+      "default": "HEAD"
+    },
+    {
+      "id": "diffStyle",
+      "type": "pickString",
+      "description": "latexdiff style",
+      "options": [
+        "ja-color",
+        "ja-underline",
+        "ja-uline",
+        "underline",
+        "cfont"
+      ],
+      "default": "ja-color"
+    },
+    {
+      "id": "cleanupMode",
+      "type": "pickString",
+      "description": "Cleanup mode for diff/ directory",
+      "options": [
+        "pdf+changed",
+        "pdf-only",
+        "none"
+      ],
+      "default": "pdf+changed"
+    }
+  ],
+  "tasks": [
+    {
+      "label": "Diff PDF: origin/main -> HEAD (interactive)",
+      "type": "shell",
+      "group": "build",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "clear": false
+      },
+      "windows": {
+        "command": "powershell",
+        "args": [
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}\\scripts\\make_diff.ps1",
+          "-RootTex",
+          "main.tex",
+          "-BaseRef",
+          "${input:diffBaseRef}",
+          "-HeadRef",
+          "${input:diffHeadRef}",
+          "-Style",
+          "${input:diffStyle}",
+          "-CleanupMode",
+          "${input:cleanupMode}"
+        ]
+      },
+      "linux": {
+        "command": "bash",
+        "args": [
+          "-lc",
+          "LTXDIFF_STYLE='${input:diffStyle}' LTXDIFF_CLEANUP_MODE='${input:cleanupMode}' ./scripts/make_diff.sh main.tex '${input:diffBaseRef}' '${input:diffHeadRef}'"
+        ]
+      },
+      "osx": {
+        "command": "bash",
+        "args": [
+          "-lc",
+          "LTXDIFF_STYLE='${input:diffStyle}' LTXDIFF_CLEANUP_MODE='${input:cleanupMode}' ./scripts/make_diff.sh main.tex '${input:diffBaseRef}' '${input:diffHeadRef}'"
+        ]
+      }
+    },
+    {
+      "label": "Diff PDF: baseRef -> working tree (interactive)",
+      "type": "shell",
+      "group": "build",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "clear": false
+      },
+      "windows": {
+        "command": "powershell",
+        "args": [
+          "-NoProfile",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "${workspaceFolder}\\scripts\\make_diff.ps1",
+          "-RootTex",
+          "main.tex",
+          "-BaseRef",
+          "${input:diffBaseRef}",
+          "-CompareWorktree",
+          "-Style",
+          "${input:diffStyle}",
+          "-CleanupMode",
+          "${input:cleanupMode}"
+        ]
+      },
+      "linux": {
+        "command": "bash",
+        "args": [
+          "-lc",
+          "LTXDIFF_STYLE='${input:diffStyle}' LTXDIFF_CLEANUP_MODE='${input:cleanupMode}' ./scripts/make_diff.sh main.tex '${input:diffBaseRef}'"
+        ]
+      },
+      "osx": {
+        "command": "bash",
+        "args": [
+          "-lc",
+          "LTXDIFF_STYLE='${input:diffStyle}' LTXDIFF_CLEANUP_MODE='${input:cleanupMode}' ./scripts/make_diff.sh main.tex '${input:diffBaseRef}'"
+        ]
+      }
+    },
+    {
+      "label": "Open diff PDF (main)",
+      "type": "shell",
+      "problemMatcher": [],
+      "windows": {
+        "command": "cmd",
+        "args": [
+          "/c",
+          "start",
+          "",
+          "${workspaceFolder}\\diff\\out\\main.pdf"
+        ]
+      },
+      "linux": {
+        "command": "bash",
+        "args": [
+          "-lc",
+          "xdg-open '${workspaceFolder}/diff/out/main.pdf'"
+        ]
+      },
+      "osx": {
+        "command": "bash",
+        "args": [
+          "-lc",
+          "open '${workspaceFolder}/diff/out/main.pdf'"
+        ]
+      }
+    },
+    {
+      "label": "Diff PDF + open: origin/main -> HEAD",
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "Diff PDF: origin/main -> HEAD (interactive)",
+        "Open diff PDF (main)"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "Diff PDF + open: baseRef -> working tree",
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "Diff PDF: baseRef -> working tree (interactive)",
+        "Open diff PDF (main)"
+      ],
+      "problemMatcher": []
+    }
+  ]
+}
